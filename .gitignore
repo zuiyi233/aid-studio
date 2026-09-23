@@ -83,3 +83,16 @@ CLAUDE.md
 # 根目录排查记录与智能体对话草稿不得入库
 /temp.txt
 /音画能力的部分.txt
+
+# AID 本地开发环境（Windows dev-env：工具链、依赖缓存、运行时数据，不入库）
+/dev-env/tools/
+/dev-env/maven-repo/
+/dev-env/logs/
+/dev-env/aid-upload/
+
+# 前端构建产物与依赖
+frontend/admin/node_modules/
+frontend/admin/dist/
+frontend/web/node_modules/
+frontend/web/.next/
+frontend/web/out/

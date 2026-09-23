@@ -1,0 +1,46 @@
+# ============================================================================
+# AID 本地开发中间件（MySQL + Redis）— Windows 开发模式一键启动用
+# 与仓库 deploy/docker/docker-compose.middleware.yml 保持一致，额外修复：
+#   - MYSQL_ROOT_HOST=% ：允许宿主机 TCP 连接 root（官方镜像默认 root 仅限容器内 localhost）
+# 数据库：root / 123456，库 aid_test（后端经 DB_* 环境变量指向该库）
+# 首次启动自动导入 sql/ 目录下全部顶层初始化脚本
+# ============================================================================
+services:
+  mysql-dev:
+    image: mysql:5.7
+    container_name: aid-dev-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: "123456"
+      MYSQL_DATABASE: aid_test
+      MYSQL_ROOT_HOST: "%"
+      TZ: Asia/Shanghai
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_general_ci
+      - --default-time-zone=+08:00
+    ports:
+      - "3306:3306"
+    volumes:
+      - aid-dev-mysql-data:/var/lib/mysql
+      # 首次启动自动导入基线与增量脚本
+      - ../sql:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-p123456"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis-dev:
+    image: redis:7-alpine
+    container_name: aid-dev-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - aid-dev-redis-data:/data
+
+volumes:
+  aid-dev-mysql-data:
+  aid-dev-redis-data:

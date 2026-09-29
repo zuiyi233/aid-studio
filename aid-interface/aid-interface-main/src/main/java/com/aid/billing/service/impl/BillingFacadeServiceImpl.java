@@ -108,7 +108,8 @@ public class BillingFacadeServiceImpl implements BillingFacadeService {
             return settleImageBilling(task, snapshot, usageData);
         }
 
-        if (meterType == MeterType.TOKEN || meterType == MeterType.PER_SECOND) {
+        if (meterType == MeterType.TOKEN || meterType == MeterType.PER_SECOND
+                || meterType == MeterType.PER_CREDIT) {
             // TOKEN / PER_SECOND：走差额结算（实际用量重算，只退不补）
             // 先完成账户层结算，再走差额退款
         } else {
@@ -168,7 +169,11 @@ public class BillingFacadeServiceImpl implements BillingFacadeService {
             if (actualAmount != null && actualAmount.compareTo(preHoldAmount) < 0) {
                 // 执行差额退款
                 BigDecimal refundAmount = preHoldAmount.subtract(actualAmount);
-                String refundDesc = meterType == MeterType.PER_SECOND ? "按秒差额退款" : "文本生成差额退款";
+                String refundDesc = switch (meterType) {
+                    case PER_SECOND -> "按秒差额退款";
+                    case PER_CREDIT -> "供应商积分差额退款";
+                    default -> "文本生成差额退款";
+                };
                 refundDifference(task.getUserId(), refundAmount, task.getBillingTraceId(), refundDesc);
                 task.setActualCost(actualAmount);
                 // 快照写入倍率后的金额

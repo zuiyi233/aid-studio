@@ -143,6 +143,10 @@ public class ModelBusinessBindingService {
         if (requested == null) return;
         AidAiModel model = models.getById(modelId);
         List<AidAiBusinessModelBinding> existing = forModel(modelId);
+        // A model edit returns its existing bindings verbatim.  Rewriting those rows would
+        // unnecessarily revalidate every historical pool member (including deleted IDs).
+        // A real binding change still follows the full pool and reference validation below.
+        if (sameBindings(existing, requested)) return;
         Set<String> functionCodes = new LinkedHashSet<>();
         existing.forEach(b -> functionCodes.add(b.getFuncCode()));
         legacyBindings(model).forEach(b -> functionCodes.add(b.getFuncCode()));
@@ -193,6 +197,20 @@ public class ModelBusinessBindingService {
             row.setDefaultsJson(binding.getDefaultsJson()); row.setSortOrder(index++);
             row.setCreateBy(actor); row.setCreateTime(DateUtils.getNowDate()); bindings.insert(row);
         }
+    }
+
+    private static boolean sameBindings(List<AidAiBusinessModelBinding> existing,
+                                        List<AidAiBusinessModelBinding> requested) {
+        if (existing.size() != requested.size()) return false;
+        for (int index = 0; index < existing.size(); index++) {
+            AidAiBusinessModelBinding left = existing.get(index);
+            AidAiBusinessModelBinding right = requested.get(index);
+            if (right == null || !Objects.equals(left.getFuncCode(), right.getFuncCode())
+                    || !Objects.equals(left.getCapabilityCode(), right.getCapabilityCode())
+                    || !Objects.equals(left.getDefaultCapability(), right.getDefaultCapability())
+                    || !Objects.equals(left.getDefaultsJson(), right.getDefaultsJson())) return false;
+        }
+        return true;
     }
 
     private static void fail(String message) { log.info("业务模型绑定失败: {}", message); throw new ServiceException(message); }

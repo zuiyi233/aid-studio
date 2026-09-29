@@ -100,7 +100,7 @@ class AiConnectivityTesterProbeSelectionTest {
 
         assertTrue(result.isSuccess());
         ArgumentCaptor<AidAiModel> modelCaptor = ArgumentCaptor.forClass(AidAiModel.class);
-        verify(jimengProbe).probe(modelCaptor.capture(), any());
+        verify(jimengProbe).probeProvider(modelCaptor.capture(), any());
         assertSame(enabledModel, modelCaptor.getValue());
     }
 
@@ -124,7 +124,7 @@ class AiConnectivityTesterProbeSelectionTest {
 
         assertTrue(result.isSuccess());
         ArgumentCaptor<AidAiModel> modelCaptor = ArgumentCaptor.forClass(AidAiModel.class);
-        verify(jimengProbe).probe(modelCaptor.capture(), any());
+        verify(jimengProbe).probeProvider(modelCaptor.capture(), any());
         assertSame(disabledModel, modelCaptor.getValue());
     }
 
@@ -212,6 +212,7 @@ class AiConnectivityTesterProbeSelectionTest {
         when(probe.providerCode()).thenReturn(providerCode);
         when(probe.supportsModel(any())).thenReturn(true);
         when(probe.probe(any(), any())).thenReturn(ProbeResult.ok(message));
+        when(probe.probeProvider(any(), any())).thenReturn(ProbeResult.ok(message));
         return probe;
     }
 

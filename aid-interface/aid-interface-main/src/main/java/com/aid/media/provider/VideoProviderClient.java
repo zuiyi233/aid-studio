@@ -25,6 +25,11 @@ public interface VideoProviderClient {
         return false;
     }
 
+    /** Whether this adapter actually forwards reference audio to its upstream protocol. */
+    default boolean supportsReferenceAudioInput() {
+        return false;
+    }
+
     /** capability 未配置时的厂商参考图默认上限；null 表示不在公共层额外限制。 */
     default Integer fallbackMaxReferenceImages(AiModelConfigVo modelConfig) {
         return null;
@@ -33,6 +38,11 @@ public interface VideoProviderClient {
     /** capability 未配置时的厂商参考视频默认上限；0 表示禁止，null 表示不在公共层额外限制。 */
     default Integer fallbackMaxReferenceVideos(AiModelConfigVo modelConfig) {
         return null;
+    }
+
+    /** True when a quote needs trusted source-video dimensions, frame rate or duration. */
+    default boolean requiresVerifiedMetadataForQuote() {
+        return false;
     }
 
     /** 在能力校验和报价之前对齐协议默认参数，不访问上游。 */

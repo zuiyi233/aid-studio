@@ -4,6 +4,7 @@ import { ReloadOutlined, SaveOutlined } from '@ant-design/icons';
 import PageCard from '@/components/PageCard';
 import SectionTitle from '@/components/SectionTitle';
 import { getMediaProcessConfig, getStorageConfig, saveMediaProcessConfig } from '@/api/aidconfig/aidconfig';
+import { getTencentMediaCos } from '@/api/aidconfig/tencentMedia';
 import './MediaProcessSection.less';
 
 const PROCESS_OPTIONS = [
@@ -12,7 +13,6 @@ const PROCESS_OPTIONS = [
   { label: '本地 FFmpeg', value: 'local-ffmpeg' }
 ];
 const STORAGE_ALLOWED_MODES: Record<string, string[]> = {
-  cos: ['tencent-mps', 'local-ffmpeg'],
   oss: ['aliyun-ims', 'local-ffmpeg'],
   local: ['local-ffmpeg'],
   qiniu: ['local-ffmpeg']
@@ -78,8 +78,10 @@ export default function MediaProcessSection() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [storageMode, setStorageMode] = useState('local');
+  const [mediaCosConfigured, setMediaCosConfigured] = useState(false);
   const processOptions = PROCESS_OPTIONS.filter((item) =>
-    (STORAGE_ALLOWED_MODES[storageMode] || STORAGE_ALLOWED_MODES.local).includes(item.value)
+    ((STORAGE_ALLOWED_MODES[storageMode] || STORAGE_ALLOWED_MODES.local).includes(item.value)
+      || item.value === 'tencent-mps' && mediaCosConfigured)
   );
   const codecOptions = mode === 'tencent-mps'
     ? ALL_CODECS.slice(0, 1)
@@ -88,19 +90,26 @@ export default function MediaProcessSection() {
   const load = async () => {
     setLoading(true);
     try {
-      const [res, storageRes]: any[] = await Promise.all([getMediaProcessConfig(), getStorageConfig()]);
+      const [res, storageRes, mediaCosRes]: any[] = await Promise.all([
+        getMediaProcessConfig(), getStorageConfig(), getTencentMediaCos()
+      ]);
       const raw = (res?.data || {}) as Record<string, any>;
       const currentStorageMode = String(storageRes?.data?.uploadMode || 'local').toLowerCase();
-      const allowedModes = STORAGE_ALLOWED_MODES[currentStorageMode] || STORAGE_ALLOWED_MODES.local;
+      const cosConfigured = mediaCosRes?.data?.configured === 'true';
+      const allowedModes = [
+        ...(STORAGE_ALLOWED_MODES[currentStorageMode] || STORAGE_ALLOWED_MODES.local),
+        ...(cosConfigured ? ['tencent-mps'] : [])
+      ];
       const configuredMode = raw.processMode || 'tencent-mps';
       setStorageMode(currentStorageMode);
+      setMediaCosConfigured(cosConfigured);
       const values: Record<string, any> = {
         ...raw,
         enabled: toBool(raw.enabled),
         processMode: allowedModes.includes(configuredMode) ? configuredMode : 'local-ffmpeg',
         tencentSecretId: raw.tencentSecretId || raw.secretId,
         tencentSecretKey: raw.tencentSecretKey || raw.secretKey,
-        tencentRegion: raw.tencentRegion || raw.region || 'ap-guangzhou',
+        tencentRegion: raw.tencentRegion || raw.region || mediaCosRes?.data?.region || 'ap-guangzhou',
         tencentCallbackUrl: raw.tencentCallbackUrl || raw.callbackUrl,
         tencentMaxConcurrency: toNum(raw.tencentMaxConcurrency, 5),
         aliyunRegion: raw.aliyunRegion || 'cn-shanghai',
@@ -155,7 +164,7 @@ export default function MediaProcessSection() {
         <Button icon={<ReloadOutlined />} onClick={load}>刷新</Button>
         <Button type="primary" icon={<SaveOutlined />} loading={saving} onClick={save}>保存配置</Button>
       </Space>}>
-        <Alert type="info" showIcon message={`当前文件存储：${STORAGE_NAMES[storageMode] || storageMode}`} description="处理方式已按当前存储自动筛选：COS 可选腾讯云 MPS 或本地 FFmpeg；OSS 可选阿里云 IMS 或本地 FFmpeg；本地与七牛存储仅可选本地 FFmpeg。云处理地域保存时还会再次校验，超过并发上限的任务继续排队；切换存储厂商前请先停用媒体处理或改用本地 FFmpeg。" style={{ marginBottom: 20 }} />
+        <Alert type="info" showIcon message={`当前文件存储：${STORAGE_NAMES[storageMode] || storageMode}`} description={`腾讯云 MPS 使用“腾讯云媒体服务”的独立处理 COS${mediaCosConfigured ? '（已配置）' : '（未配置）'}，网站可以使用其他存储；阿里云 IMS 沿用网站 OSS，本地 FFmpeg 仍可单独使用。处理结果会回存到网站当前存储。`} style={{ marginBottom: 20 }} />
         <Form form={form} labelCol={{ flex: '165px' }} wrapperCol={{ flex: 'auto' }} labelAlign="right" style={{ maxWidth: 860 }}>
           <SectionTitle title="公共配置" style={{ justifyContent: 'center' }} />
           <Form.Item label="启用媒体处理" name="enabled" valuePropName="checked" extra="关闭后新的整片合成请求会被拒绝">
@@ -164,7 +173,7 @@ export default function MediaProcessSection() {
           <Form.Item label="媒体处理方式" name="processMode" rules={[{ required: true, message: '请选择处理方式' }]}>
             <Select options={processOptions} style={{ maxWidth: 320 }} />
           </Form.Item>
-          <Form.Item label="成片输出目录" name="outputDir" rules={[{ required: true, message: '请填写输出目录' }]} extra="只填写桶内目录；输出桶使用文件存储页当前配置，无需重复填写">
+          <Form.Item label="成片输出目录" name="outputDir" rules={[{ required: true, message: '请填写输出目录' }]} extra="腾讯云 MPS 写入处理专用 COS；处理完成后按网站当前存储配置登记永久结果">
             <Input placeholder="/compose_result/" style={{ maxWidth: 360 }} />
           </Form.Item>
           <Form.Item label="默认分辨率档" name="outputResolution" rules={[{ required: true }]}><Select options={RESOLUTIONS} style={{ maxWidth: 240 }} /></Form.Item>

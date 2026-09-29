@@ -42,6 +42,7 @@ export default function ModelTable({ provider, list, loading, query, onQueryChan
   const [togglingId, setTogglingId] = React.useState<number | null>(null);
   const [testOpen, setTestOpen] = React.useState(false);
   const [testResult, setTestResult] = React.useState<ConfigTestResult | null>(null);
+  const [scrollContainer, setScrollContainer] = React.useState<HTMLDivElement | null>(null);
   const testing = React.useRef(false);
   const toggling = React.useRef(false);
   const { hasPermi } = useAuth();
@@ -218,7 +219,7 @@ export default function ModelTable({ provider, list, loading, query, onQueryChan
           )}
         </Space>
       </div>
-      <div className="model-table__scroll" role="region" aria-label="供应商模型列表" tabIndex={0}>
+      <div ref={setScrollContainer} className="model-table__scroll" role="region" aria-label="供应商模型列表" tabIndex={0}>
       <Table
         rowKey="id"
         size="small"
@@ -226,7 +227,7 @@ export default function ModelTable({ provider, list, loading, query, onQueryChan
         dataSource={list}
         columns={columns}
         scroll={{ x: 1660 }}
-        sticky={{ offsetScroll: 0 }}
+        sticky={{ offsetScroll: 0, getContainer: () => scrollContainer || window }}
         pagination={false}
         rowSelection={canEditPools && poolSnapshotReady ? {
           selectedRowKeys: selectedModelIds,

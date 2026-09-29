@@ -133,6 +133,7 @@ export const METER_TYPE_OPTIONS: EnumOption<string>[] = [
   { label: '按Token计费', value: 'TOKEN', elTagType: 'primary' },
   { label: '按张计费', value: 'PER_IMAGE', elTagType: 'success' },
   { label: '按秒计费', value: 'PER_SECOND', elTagType: 'warning' },
+  { label: '按供应商积分计费', value: 'PER_CREDIT', elTagType: 'warning' },
   { label: '按套餐计费', value: 'SKU_PACKAGE', elTagType: 'danger' },
   { label: '按字符计费', value: 'PER_CHAR', elTagType: 'info' }
 ];

@@ -46,7 +46,8 @@ public class MinimaxH3VideoProviderClient implements VideoProviderClient {
 
     @Override
     public boolean supportsProviderCode(String providerCode) {
-        return MinimaxH3Constants.PROVIDER_CODE.equalsIgnoreCase(StrUtil.trim(providerCode));
+        return MinimaxH3Constants.PROVIDER_CODE.equalsIgnoreCase(StrUtil.trim(providerCode))
+            || MinimaxH3Constants.LEGACY_PROVIDER_CODE.equalsIgnoreCase(StrUtil.trim(providerCode));
     }
 
     @Override
@@ -85,7 +86,8 @@ public class MinimaxH3VideoProviderClient implements VideoProviderClient {
             return anomaly(null, "上游查询暂不可用", null);
         }
         return parseQueryResponse(response.statusCode(), response.body(), providerTaskId,
-            StrUtil.blankToDefault(modelConfig.getCapabilityCode(), modelConfig.getModelCode()));
+            StrUtil.blankToDefault(modelConfig.getCapabilityCode(), modelConfig.getModelCode()),
+            modelConfig.getRealModelCode());
     }
 
     static ProviderSubmitResult parseSubmitResponse(int httpStatus, String raw) {
@@ -107,6 +109,12 @@ public class MinimaxH3VideoProviderClient implements VideoProviderClient {
 
     static ProviderTaskResult parseQueryResponse(int httpStatus, String raw, String providerTaskId,
                                                   String platformModelCode) {
+        return parseQueryResponse(httpStatus, raw, providerTaskId, platformModelCode,
+            MinimaxH3Constants.REAL_MODEL_CODE);
+    }
+
+    static ProviderTaskResult parseQueryResponse(int httpStatus, String raw, String providerTaskId,
+                                                  String platformModelCode, String realModelCode) {
         if (httpStatus < 200 || httpStatus >= 300 || !JSONUtil.isTypeJSON(raw)) {
             log.warn("MiniMax H3 query HTTP/document anomaly, taskId={}, httpStatus={}, responseLength={}",
                 providerTaskId, httpStatus, StrUtil.length(raw));
@@ -118,7 +126,7 @@ public class MinimaxH3VideoProviderClient implements VideoProviderClient {
             log.warn("MiniMax H3 query response missing task object, taskId={}", providerTaskId);
             return anomaly(raw, "上游响应缺少任务数据", null);
         }
-        if (!MinimaxH3Constants.REAL_MODEL_CODE.equals(text(task, "model"))
+        if (!StrUtil.equals(StrUtil.trim(realModelCode), text(task, "model"))
             || !"generation".equals(text(task, "task_type"))
             || !"video".equals(text(task, "modality"))) {
             log.warn("MiniMax H3 query task contract mismatch, taskId={}", providerTaskId);
@@ -212,7 +220,10 @@ public class MinimaxH3VideoProviderClient implements VideoProviderClient {
      */
     private static InputUsage resolveSuccessfulInputUsage(String modelCode, Integer videoSeconds,
                                                            Integer imageCount) {
-        if (MinimaxH3Constants.MODEL_T2V.equals(modelCode) || "text_to_video".equals(modelCode)) {
+        if (MinimaxH3Constants.MODEL_T2V.equals(modelCode)
+            || MinimaxH3Constants.MODEL_OFFICIAL.equals(modelCode)
+            || MinimaxH3Constants.MODEL_MAX_OFFICIAL.equals(modelCode)
+            || "text_to_video".equals(modelCode)) {
             return knownSceneInputUsage(videoSeconds, imageCount, 0);
         }
         if (MinimaxH3Constants.MODEL_I2V_FIRST.equals(modelCode)

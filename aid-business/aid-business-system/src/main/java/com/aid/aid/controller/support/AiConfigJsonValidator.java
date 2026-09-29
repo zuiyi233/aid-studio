@@ -60,6 +60,7 @@ public final class AiConfigJsonValidator
             Set.of(VolcengineConstants.PROTOCOL_SEEDANCE_VIDEO,
                     MinimaxH3Constants.PROTOCOL_VIDEO,
                     ConfigurableAsyncMediaConstants.PROTOCOL_VIDEO,
+                    "tencent-ci-async-media",
                     "dmc-h3-video");
 
     /** 可配置异步视频协议允许下发的音频开关字段；none 表示上游隐式处理。 */
@@ -136,6 +137,11 @@ public final class AiConfigJsonValidator
      */
     public static void validate(AidAiModel model, String providerCode)
     {
+        validate(model, providerCode, false);
+    }
+
+    public static void validate(AidAiModel model, String providerCode, boolean adapterSupportsReferenceAudio)
+    {
         if (model == null)
         {
             return;
@@ -152,7 +158,7 @@ public final class AiConfigJsonValidator
         validateViduModelCallback(model);
         validateConfigurableVideoAudioField(model);
         validateConfigurableVideoResolutionMapping(model);
-        validateReferenceAudioCapability(model, providerCode);
+        validateReferenceAudioCapability(model, providerCode, adapterSupportsReferenceAudio);
     }
 
     /** 校验可配置异步视频协议的上游音频开关字段。 */
@@ -290,7 +296,7 @@ public final class AiConfigJsonValidator
     }
 
     /** 视频参考音频能力开启时，服务商、数量、时长、格式及可选的音画同出依赖必须可执行。 */
-    private static void validateReferenceAudioCapability(AidAiModel model, String providerCode)
+    private static void validateReferenceAudioCapability(AidAiModel model, String providerCode, boolean adapterSupportsReferenceAudio)
     {
         if (StrUtil.isBlank(model.getCapabilityJson()))
         {
@@ -311,7 +317,7 @@ public final class AiConfigJsonValidator
         {
             return;
         }
-        String reason = resolveReferenceAudioConfigError(model, providerCode, capability);
+        String reason = resolveReferenceAudioConfigError(model, providerCode, capability, adapterSupportsReferenceAudio);
         if (StrUtil.isNotBlank(reason))
         {
             log.error("视频参考音频能力配置非法: modelCode={}, reason={}", model.getModelCode(), reason);
@@ -327,14 +333,16 @@ public final class AiConfigJsonValidator
      * @param capability   已解析的能力 JSON
      * @return 不合法原因；配置合法返回 null
      */
-    private static String resolveReferenceAudioConfigError(AidAiModel model, String providerCode, JsonNode capability)
+    private static String resolveReferenceAudioConfigError(AidAiModel model, String providerCode, JsonNode capability,
+                                                           boolean adapterSupportsReferenceAudio)
     {
         if (!Objects.equals("video", StrUtil.trim(model.getModelType())))
         {
             return "仅视频模型可开启参考音频";
         }
         // Provider 侧一律按 equalsIgnoreCase 匹配，此处统一转小写后比对，避免大小写差异误判为未实现
-        boolean deliverable = REFERENCE_AUDIO_PROVIDER_CODES.contains(normalizeCode(providerCode))
+        boolean deliverable = adapterSupportsReferenceAudio
+                || REFERENCE_AUDIO_PROVIDER_CODES.contains(normalizeCode(providerCode))
                 || REFERENCE_AUDIO_PROTOCOLS.contains(normalizeCode(model.getProtocol()))
                 || isAgnes25Model(model, providerCode)
                 || isWan3DashscopeModel(model)
@@ -383,10 +391,14 @@ public final class AiConfigJsonValidator
         {
             return "通配格式必须单独配置";
         }
-        // "*" 表示厂商未公开格式白名单；其余格式仍须能由服务端解析时长。
+        // COS 原生媒体处理使用 ffprobe 校验已登记输入，可解析 FLAC/AMR；
+        // 通用参考音频上传仍使用 ReferenceAudioLimiter 的较窄格式集合。
+        boolean tencentCiMedia = "tencent_ci_media".equals(normalizeCode(providerCode))
+                && "tencent-ci-async-media".equals(normalizeCode(model.getProtocol()));
         List<String> unsupported = formats.stream()
                 .filter(format -> !"*".equals(format))
-                .filter(format -> !ReferenceAudioLimiter.isProbeableFormat(format))
+                .filter(format -> !ReferenceAudioLimiter.isProbeableFormat(format)
+                        && !(tencentCiMedia && Set.of("flac", "amr").contains(normalizeCode(format))))
                 .toList();
         if (!unsupported.isEmpty())
         {

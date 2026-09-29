@@ -18,7 +18,11 @@ export default function ModelRouteCapabilityEditor({ definition, route, modelTyp
   const cap = parseCapabilityJsonToModel(JSON.stringify(route.capability || {}));
   // 常用控件只修改明确编辑的字段，避免对整份能力 JSON 做无关的默认值归一化。
   const patchCapability = (patch: Record<string, ConfigValue>) => { if (!cap.parseError) onChange({ capability: { ...route.capability, ...patch } }); };
-  const sizes = Array.from(new Set(['480P', '720P', '1080P', '2K', '4K', ...cap.sizeOptions]));
+  const targetResolutions = Array.isArray(route.capability?.targetResolutionOptions)
+    ? route.capability.targetResolutionOptions.filter((value): value is string => typeof value === 'string') : null;
+  const selectedSizes = targetResolutions || cap.sizeOptions;
+  const sizes = targetResolutions || Array.from(new Set(['480P', '720P', '1080P', '2K', '4K', ...cap.sizeOptions]));
+  const customResolution = !targetResolutions && cap.allowCustomWH === true && cap.sizeOptions.length === 0;
   const durations = Array.from(new Set([5, 10, 15, ...cap.durationOptions].map(Number)))
     .filter(Number.isFinite).sort((a, b) => a - b);
   return <>
@@ -26,29 +30,33 @@ export default function ModelRouteCapabilityEditor({ definition, route, modelTyp
       <h3>常用能力配置</h3>
       <div className="model-capability-quick__field">
         <strong>分辨率 / 规格</strong>
-        <Checkbox.Group disabled={cap.parseError} aria-label="分辨率 / 规格" options={sizes} value={cap.sizeOptions}
-          onChange={(values) => patchCapability({ sizeOptions: [
-            ...cap.sizeOptions.filter((value) => values.includes(value)),
-            ...values.filter((value) => !cap.sizeOptions.includes(value))
-          ] })} />
-        <small>按模型实际支持范围勾选；自定义尺寸和上游映射在下方完整配置中维护。</small>
+        {customResolution ? <small>按目标宽高设置输出尺寸，最大 {cap.maxOutputPixels
+          ? `${Math.floor(cap.maxOutputPixels / 1000000)} MP` : '像素上限以模型能力为准'}；下方可调整像素限制。</small>
+          : <Checkbox.Group disabled={cap.parseError} aria-label="分辨率 / 规格" options={sizes} value={selectedSizes}
+            onChange={(values) => patchCapability(targetResolutions
+              ? { targetResolutionOptions: values as string[] }
+              : { sizeOptions: [
+                  ...cap.sizeOptions.filter((value) => values.includes(value)),
+                  ...values.filter((value) => !cap.sizeOptions.includes(value))
+                ] })} />}
+        {!customResolution && <small>按模型实际支持范围勾选；自定义尺寸和上游映射在下方完整配置中维护。</small>}
       </div>
-      <div className="model-capability-quick__field">
+      {route.capability?.supportsAspectRatio === true && <div className="model-capability-quick__field">
         <strong>画面比例</strong>
         <Checkbox.Group disabled={cap.parseError} aria-label="画面比例" options={Array.from(new Set(['16:9', '9:16', '1:1', '4:3', '3:4', ...cap.aspectRatioOptions]))}
           value={cap.aspectRatioOptions} onChange={(values) => patchCapability({ aspectRatioOptions: [
             ...cap.aspectRatioOptions.filter((value) => values.includes(value)),
             ...values.filter((value) => !cap.aspectRatioOptions.includes(value))
           ] })} />
-      </div>
+      </div>}
       {modelType === 'video' && <>
-        <div className="model-capability-quick__field">
+        {route.capability?.supportsDuration === true && <div className="model-capability-quick__field">
           <strong>视频时长（秒）</strong>
           <Checkbox.Group disabled={cap.parseError} aria-label="视频时长（秒）" options={durations}
             value={cap.durationOptions} onChange={(values) => patchCapability({
               durationOptions: Array.from(new Set(values.map(Number))).sort((a, b) => a - b)
             })} />
-        </div>
+        </div>}
         <Space wrap size={[24, 12]}>
           <label>音画同步 / 生成声音 <Switch disabled={cap.parseError} aria-label="音画同步 / 生成声音" checkedChildren="支持" unCheckedChildren="不支持"
             checked={cap.supportsAudio === true} onChange={(enabled) => patchCapability(enabled ? { supportsAudio: true }

@@ -334,7 +334,7 @@ public class ModelSkuCoverageService {
         boolean valid = switch (meter) {
             case TOKEN -> nonNegative(sku.getInputPricePerMillion())
                     && nonNegative(sku.getOutputPricePerMillion());
-            case PER_IMAGE, SKU_PACKAGE -> nonNegative(sku.getPrice());
+            case PER_IMAGE, PER_CREDIT, SKU_PACKAGE -> nonNegative(sku.getPrice());
             case PER_SECOND -> nonNegative(sku.getPricePerSecond())
                     || (!explicitMeter && positive(sku.getPrice()) && positiveDurationMax(sku.getMatch()));
             case PER_CHAR -> nonNegative(sku.getPricePerChar())

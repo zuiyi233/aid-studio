@@ -42,6 +42,35 @@ const price = (value: unknown, unit: string): string | null => {
   return amount == null ? null : `¥${formatAmount(amount)}/${unit}`;
 };
 
+/** The model-level price remains authoritative for routes without their own override. */
+export function withEffectiveModelBilling(model: Partial<Model>): ModelCapabilityDefinition[] {
+  let rootRule: JsonRecord = {};
+  try {
+    const parsed = model.billingRuleJson ? JSON.parse(model.billingRuleJson) : {};
+    if (isRecord(parsed)) rootRule = parsed;
+  } catch {
+    // A malformed model rule must remain visibly incomplete.
+  }
+  const rootSkus = Array.isArray(rootRule.skus) ? rootRule.skus : [];
+  return (model.capabilities || []).map((definition) => ({
+    ...definition,
+    bindings: definition.bindings.map((route) => {
+      const mode = route.billingMode || model.billingMode;
+      const routeSkus = isRecord(route.billingRule) && Array.isArray(route.billingRule.skus)
+        ? route.billingRule.skus : [];
+      if (mode === 'SKU' && routeSkus.length === 0 && rootSkus.length > 0 && model.billingMode === 'SKU') {
+        return { ...route, billingMode: 'SKU' as const,
+          billingRule: rootRule as ModelProtocolBinding['billingRule'] };
+      }
+      if (!route.billingMode && model.billingMode === 'FIXED' && route.costCredits == null) {
+        return { ...route, billingMode: 'FIXED' as const,
+          costCredits: model.costCredits == null ? undefined : model.costCredits };
+      }
+      return route;
+    })
+  }));
+}
+
 /** 与服务端 ModelBillingRuleValidator 的主价格完整性规则保持一致。 */
 export function isSkuMainPriceConfigured(rawSku: unknown, fallbackMeterType: string): boolean {
   const sku = isRecord(rawSku) ? rawSku : {};
@@ -56,6 +85,7 @@ export function isSkuMainPriceConfigured(rawSku: unknown, fallbackMeterType: str
       || (Number.isSafeInteger(Number(unit)) && Number(unit) > 0));
   }
   if (meterType === 'SKU_PACKAGE') return finiteNumber(sku.price) != null;
+  if (meterType === 'PER_CREDIT') return finiteNumber(sku.price) != null;
   if (meterType === 'PER_SECOND') {
     return finiteNumber(sku.pricePerSecond) != null || (!explicitMeterType && Number(sku.price) > 0);
   }
@@ -76,6 +106,9 @@ export function skuPriceLabel(rawSku: unknown, fallbackMeterType: string): strin
   }
   if (meterType === 'PER_SECOND') {
     return price(sku.pricePerSecond, '秒') || price(sku.price, '次（兼容价）') || '价格未配置';
+  }
+  if (meterType === 'PER_CREDIT') {
+    return price(sku.price, '供应商积分') || '价格未配置';
   }
   if (meterType === 'PER_CHAR') {
     const usage = price(sku.pricePerChar, '字符') || price(sku.price, '次（兼容价）');
@@ -158,10 +191,28 @@ const aggregate = (routes: RouteBillingSummary[]): BillingOverviewData => ({
 });
 
 export function getModelBillingOverview(model: Partial<Model>): BillingOverviewData {
-  const definitions = (model.capabilities || []).filter((definition) => definition.enabled !== false);
+  const definitions = withEffectiveModelBilling(model).filter((definition) => definition.enabled !== false);
   if (definitions.length > 0) {
     const fallbackMeterType = inferMeterType(model.modelType || '');
-    return aggregate(definitions.flatMap((definition) => summarizeCapabilityBilling(definition, fallbackMeterType).routes));
+    const overview = aggregate(definitions.flatMap((definition) => summarizeCapabilityBilling(definition, fallbackMeterType).routes));
+    const uniqueSkus = new Map<string, JsonRecord>();
+    for (const definition of definitions) {
+      for (const route of definition.bindings) {
+        if (route.enabled === false || route.billingMode !== 'SKU' || !isRecord(route.billingRule)) continue;
+        const skus = Array.isArray(route.billingRule.skus) ? route.billingRule.skus : [];
+        for (const rawSku of skus) {
+          if (isRecord(rawSku)) {
+            const code = typeof rawSku.skuCode === 'string' ? rawSku.skuCode.trim() : '';
+            uniqueSkus.set(code || JSON.stringify(rawSku), rawSku);
+          }
+        }
+      }
+    }
+    if (uniqueSkus.size > 0) {
+      overview.skuCount = uniqueSkus.size;
+      overview.enabledSkuCount = Array.from(uniqueSkus.values()).filter((sku) => sku.enabled !== false).length;
+    }
+    return overview;
   }
   let billingRule: JsonRecord = {};
   try {

@@ -24,6 +24,7 @@ import com.aid.common.core.redis.RedisCache;
 import com.aid.common.exception.ServiceException;
 import com.aid.domain.vo.AiModelConfigVo;
 import com.aid.media.enums.MediaBillingStatus;
+import com.aid.media.enums.MediaTaskStatus;
 import com.aid.media.service.IMediaBillingService;
 import com.aid.media.provider.TextFailureBillingPolicy;
 import com.aid.notify.wechat.service.IWechatNotifyService;
@@ -241,7 +242,8 @@ public class MediaBillingServiceImpl implements IMediaBillingService {
 
         // Step 2: 执行账户退回（幂等，已执行则跳过）
         String bizName = billingRecordMetadataService.buildMediaBizName(task);
-        accountUpdateService.refund(userId, frozenAmount, task.getBillingTraceId(), "refund", bizName + "失败退回");
+        accountUpdateService.refund(userId, frozenAmount, task.getBillingTraceId(), "refund",
+                bizName + (MediaTaskStatus.CANCELLED.name().equals(task.getStatus()) ? "取消退回" : "失败退回"));
 
         // Step 3: CAS REFUNDING → FAILED
         int finalRows = casFinishBillingStatus(task.getId(), MediaBillingStatus.REFUNDING.name(),

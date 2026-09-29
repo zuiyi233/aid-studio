@@ -27,8 +27,8 @@ export function StudioTaskList({ limit = 8 }: { limit?: number }) {
     useStudioUiStore.getState().patchTask(taskId, { stage: '正在请求后端取消' })
     try {
       await requestCancelUserTaskById(remoteTaskId)
-      useStudioUiStore.getState().patchTask(taskId, { stage: '取消请求已发送，等待任务终态' })
-      message.success('已请求后端取消任务')
+      useStudioUiStore.getState().patchTask(taskId, { stage: '停止请求已受理，请查看最终状态' })
+      message.info('已停止后续任务；已执行的任务可能继续完成')
     } catch (error: unknown) {
       const errorMessage = (error as Error)?.message || '后端取消失败'
       useStudioUiStore.getState().patchTask(taskId, { stage: '取消失败', errorMessage })

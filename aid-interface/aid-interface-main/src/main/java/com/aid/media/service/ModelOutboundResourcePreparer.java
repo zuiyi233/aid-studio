@@ -29,7 +29,13 @@ public class ModelOutboundResourcePreparer
     public void prepare(AiModelConfigVo config, MediaVideoGenerateRequest request)
     {
         imageProxyProcessor.process(config, request);
-        signer.sign(request);
+        // Tencent CI stages registered media directly inside the configured COS bucket.
+        // Replacing the registered CDN URL with a signed COS URL here would hide the
+        // trusted bucket object path from that staging step and force an external download.
+        if (config == null || !"tencent_ci_media".equalsIgnoreCase(config.getProviderCode()))
+        {
+            signer.sign(request);
+        }
     }
 
     public void prepare(AiModelConfigVo config, MediaAudioGenerateRequest request)

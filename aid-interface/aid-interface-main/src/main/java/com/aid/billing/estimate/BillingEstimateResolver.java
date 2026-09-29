@@ -35,6 +35,7 @@ public class BillingEstimateResolver {
         this.strategies.put(MeterType.TOKEN, tokenStrategy);
         this.strategies.put(MeterType.PER_IMAGE, perImageStrategy);
         this.strategies.put(MeterType.PER_SECOND, perSecondStrategy);
+        this.strategies.put(MeterType.PER_CREDIT, perSecondStrategy);
         this.strategies.put(MeterType.SKU_PACKAGE, skuPackageStrategy);
     }
 

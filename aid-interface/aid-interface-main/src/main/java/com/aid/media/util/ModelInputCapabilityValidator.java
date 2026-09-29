@@ -228,7 +228,8 @@ public final class ModelInputCapabilityValidator {
                                                            MediaVideoGenerateRequest request) {
         boolean lipSync = isLipSyncRequest(modelConfig, request);
         if (!lipSync && Boolean.FALSE.equals(modelConfig.getSupportsDuration())
-                && request.getDurationSeconds() != null) {
+                && request.getDurationSeconds() != null
+                && !isVerifiedSourceBillingDuration(modelConfig, request)) {
             reject(modelConfig, "parameter", "模型禁止时长参数", "模型不支持时长");
         }
         if (lipSync && request.getDurationSeconds() != null) {
@@ -246,9 +247,43 @@ public final class ModelInputCapabilityValidator {
             reject(modelConfig, "parameter", "模型禁止画面比例参数", "画面比例不支持");
         }
         String size = firstText(request.getOptions(), "resolution", "size", "imageSize", "image_size");
-        if (Boolean.FALSE.equals(modelConfig.getSupportsSizePreset()) && StrUtil.isNotBlank(size)) {
+        if (Boolean.FALSE.equals(modelConfig.getSupportsSizePreset()) && StrUtil.isNotBlank(size)
+                && !isVerifiedSourceProcessingResolution(modelConfig, request, size)) {
             reject(modelConfig, "parameter", "模型禁止规格档位", "模型不支持规格");
         }
+    }
+
+    /** 视频处理按可信源短边选择计费档位；它不是用户指定的生成规格。 */
+    private static boolean isVerifiedSourceProcessingResolution(AiModelConfigVo modelConfig,
+                                                                 MediaVideoGenerateRequest request,
+                                                                 String resolution) {
+        if (!"tencent-mps:subtitle-erase".equals(modelConfig.getProtocol())
+                || request.getResolvedReferenceVideos() == null
+                || request.getResolvedReferenceVideos().size() != 1) return false;
+        var source = request.getResolvedReferenceVideos().get(0);
+        if (source.getWidth() == null || source.getHeight() == null) return false;
+        int shortSide = Math.min(source.getWidth(), source.getHeight());
+        if (shortSide < 1 || shortSide > 2160) return false;
+        String derived = shortSide <= 720 ? "720p" : shortSide <= 1080 ? "1080p"
+                : shortSide <= 1440 ? "2K" : "4K";
+        return derived.equalsIgnoreCase(resolution);
+    }
+
+    /** 源视频处理的内部计费时长不是用户选择的输出时长，只接受与可信源时长一致的值。 */
+    private static boolean isVerifiedSourceBillingDuration(AiModelConfigVo modelConfig,
+                                                            MediaVideoGenerateRequest request) {
+        String protocol = modelConfig.getProtocol();
+        boolean depth = "wavespeed:depth-anything-video".equals(protocol);
+        boolean subtitle = "tencent-mps:subtitle-erase".equals(protocol);
+        if ((!depth && !subtitle) || request.getResolvedReferenceVideos() == null
+                || request.getResolvedReferenceVideos().size() != 1) return false;
+        var source = request.getResolvedReferenceVideos().get(0);
+        long maximumMs = subtitle ? 300_000L : 600_000L;
+        if (source.getDurationMs() == null || source.getDurationMs() < 1_000L
+                || source.getDurationMs() > maximumMs) return false;
+        long sourceSeconds = (source.getDurationMs() + 999L) / 1000L;
+        long billedSeconds = depth ? Math.max(3L, sourceSeconds) : sourceSeconds;
+        return request.getDurationSeconds().longValue() == billedSeconds;
     }
 
     private static void validateRule(AiModelConfigVo modelConfig, InputState inputs,

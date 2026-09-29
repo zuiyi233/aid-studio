@@ -47,8 +47,11 @@ public class ProviderUpstreamOperationsServiceImpl implements IProviderUpstreamO
     private static final Set<String> PRODUCT_TYPES = Set.of("video", "image", "try_on");
     private static final Set<String> SEARCH_TYPES = Set.of("task_ids", "external_task_ids");
     private static final String MINIMAX_PROVIDER_CODE = "minimax";
+    private static final String MINIMAX_H3_PROVIDER_CODE = "minimax_h3";
     private static final String VIDU_PROVIDER_CODE = "vidu";
     private static final String DEEPSEEK_PROVIDER_CODE = "deepseek";
+    private static final String WAVESPEED_PROVIDER_CODE = "wavespeed";
+    private static final String TOPAZ_PROVIDER_CODE = "topaz";
     private static final Set<String> MINIMAX_TASK_STATUSES = Set.of(
         "queued", "running", "succeeded", "failed", "cancelled");
     private static final Set<String> MINIMAX_TASK_TYPES = Set.of("generation", "regeneration", "h3_context_ir");
@@ -67,11 +70,13 @@ public class ProviderUpstreamOperationsServiceImpl implements IProviderUpstreamO
             return accountExtension.capabilities(provider);
         }
         boolean kling = KLING_PROVIDER_CODE.equalsIgnoreCase(StrUtil.trim(provider.getProviderCode()));
-        boolean minimax = MINIMAX_PROVIDER_CODE.equalsIgnoreCase(StrUtil.trim(provider.getProviderCode()));
+        boolean minimax = isMinimaxVideoProvider(provider);
         boolean vidu = VIDU_PROVIDER_CODE.equalsIgnoreCase(StrUtil.trim(provider.getProviderCode()));
         boolean deepseek = DEEPSEEK_PROVIDER_CODE.equalsIgnoreCase(StrUtil.trim(provider.getProviderCode()));
+        boolean wavespeed = WAVESPEED_PROVIDER_CODE.equalsIgnoreCase(StrUtil.trim(provider.getProviderCode()));
+        boolean topaz = TOPAZ_PROVIDER_CODE.equalsIgnoreCase(StrUtil.trim(provider.getProviderCode()));
         Map<String, Object> result = new LinkedHashMap<>();
-        result.put("balance", kling || vidu || deepseek);
+        result.put("balance", kling || vidu || deepseek || wavespeed || topaz);
         result.put("upstreamTasks", kling || minimax);
         if (kling) {
             result.put("balanceKind", "resourcePackages");
@@ -99,6 +104,16 @@ public class ProviderUpstreamOperationsServiceImpl implements IProviderUpstreamO
             result.put("balanceUnit", "CNY/USD");
             result.put("balanceDelayNotice", "余额来自 DeepSeek 官方账户余额接口");
         }
+        if (wavespeed) {
+            result.put("balanceKind", "money");
+            result.put("balanceUnit", "USD");
+            result.put("balanceDelayNotice", "余额来自 WaveSpeed 官方账户接口");
+        }
+        if (topaz) {
+            result.put("balanceKind", "credits");
+            result.put("balanceUnit", "credits");
+            result.put("balanceDelayNotice", "余额来自 Topaz Labs 官方积分接口");
+        }
         return result;
     }
 
@@ -114,6 +129,12 @@ public class ProviderUpstreamOperationsServiceImpl implements IProviderUpstreamO
         }
         if (DEEPSEEK_PROVIDER_CODE.equalsIgnoreCase(StrUtil.trim(provider.getProviderCode()))) {
             return deepseekBalance(provider);
+        }
+        if (WAVESPEED_PROVIDER_CODE.equalsIgnoreCase(StrUtil.trim(provider.getProviderCode()))) {
+            return wavespeedBalance(provider);
+        }
+        if (TOPAZ_PROVIDER_CODE.equalsIgnoreCase(StrUtil.trim(provider.getProviderCode()))) {
+            return topazBalance(provider);
         }
         provider = requireKling(providerId);
         long now = Instant.now().toEpochMilli();
@@ -216,10 +237,89 @@ public class ProviderUpstreamOperationsServiceImpl implements IProviderUpstreamO
         }
     }
 
+    /** WaveSpeed 官方账户余额以美元计价，不将查询失败解释为零余额。 */
+    private Map<String, Object> wavespeedBalance(AidAiProvider provider) {
+        if (StrUtil.isBlank(provider.getApiKey())) {
+            throw failure("missing WaveSpeed api key, providerId=" + provider.getId(), "API密钥未配置");
+        }
+        String url = buildProviderUrl(provider, "/api/v3/balance");
+        try (HttpResponse response = HttpRequest.get(url)
+                .header("Authorization", "Bearer " + provider.getApiKey().trim())
+                .timeout(HTTP_TIMEOUT_MS)
+                .execute()) {
+            String raw = response.body();
+            JsonNode root = JSONUtil.isTypeJSON(raw) ? MAPPER.readTree(raw) : null;
+            if (!response.isOk() || root == null || root.path("code").asInt(-1) != 200
+                    || !root.path("data").path("balance").isNumber()) {
+                log.warn("WaveSpeed balance query failed, providerId={}, httpStatus={}, responseLength={}",
+                        provider.getId(), response.getStatus(), StrUtil.length(raw));
+                throw new ServiceException(response.getStatus() == 401 ? "上游鉴权配置无效" : "余额查询失败");
+            }
+            BigDecimal balance = root.path("data").path("balance").decimalValue();
+            if (balance.signum() < 0) {
+                throw failure("negative WaveSpeed balance", "余额响应异常");
+            }
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("balance", balance);
+            result.put("unit", "USD");
+            result.put("balanceKind", "money");
+            result.put("queriedAt", Instant.now().toEpochMilli());
+            return Collections.unmodifiableMap(result);
+        } catch (ServiceException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            log.warn("WaveSpeed balance query unavailable, providerId={}, error={}",
+                    provider.getId(), ex.getClass().getSimpleName());
+            throw new ServiceException("上游服务暂不可用");
+        }
+    }
+
+    /** Topaz returns available, reserved and total API credits; only available credits may be spent. */
+    private Map<String, Object> topazBalance(AidAiProvider provider) {
+        if (StrUtil.isBlank(provider.getApiKey())) {
+            throw failure("missing Topaz api key, providerId=" + provider.getId(), "API密钥未配置");
+        }
+        String url = buildProviderUrl(provider, "/account/v1/credits/balance");
+        try (HttpResponse response = HttpRequest.get(url)
+                .header("X-API-Key", provider.getApiKey().trim())
+                .timeout(HTTP_TIMEOUT_MS)
+                .execute()) {
+            String raw = response.body();
+            JsonNode root = JSONUtil.isTypeJSON(raw) ? MAPPER.readTree(raw) : null;
+            if (!response.isOk() || root == null || !root.path("available_credits").isIntegralNumber()
+                    || root.has("reserved_credits") && !root.path("reserved_credits").isIntegralNumber()
+                    || root.has("total_credits") && !root.path("total_credits").isIntegralNumber()) {
+                log.warn("Topaz balance query failed, providerId={}, httpStatus={}, responseLength={}",
+                        provider.getId(), response.getStatus(), StrUtil.length(raw));
+                throw new ServiceException(response.getStatus() == 401 ? "上游鉴权配置无效" : "余额查询失败");
+            }
+            long available = root.path("available_credits").asLong();
+            long reserved = root.path("reserved_credits").asLong(0);
+            long total = root.path("total_credits").asLong(available + reserved);
+            if (available < 0 || reserved < 0 || total < available + reserved) {
+                throw failure("inconsistent Topaz credit balance", "余额响应异常");
+            }
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("balance", available);
+            result.put("reserved", reserved);
+            result.put("total", total);
+            result.put("unit", "credits");
+            result.put("balanceKind", "credits");
+            result.put("queriedAt", Instant.now().toEpochMilli());
+            return Collections.unmodifiableMap(result);
+        } catch (ServiceException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            log.warn("Topaz balance query unavailable, providerId={}, error={}",
+                    provider.getId(), ex.getClass().getSimpleName());
+            throw new ServiceException("上游服务暂不可用");
+        }
+    }
+
     @Override
     public Map<String, Object> tasks(Long providerId, ProviderUpstreamTaskQuery query) {
         AidAiProvider provider = requireProvider(providerId);
-        if (MINIMAX_PROVIDER_CODE.equalsIgnoreCase(StrUtil.trim(provider.getProviderCode()))) {
+        if (isMinimaxVideoProvider(provider)) {
             return minimaxTasks(requireMinimax(provider), query);
         }
         provider = requireKling(providerId);
@@ -719,12 +819,17 @@ public class ProviderUpstreamOperationsServiceImpl implements IProviderUpstreamO
     }
 
     private AidAiProvider requireMinimax(AidAiProvider provider) {
-        if (provider == null
-            || !MINIMAX_PROVIDER_CODE.equalsIgnoreCase(StrUtil.trim(provider.getProviderCode()))) {
+        if (!isMinimaxVideoProvider(provider)) {
             throw failure("unsupported MiniMax provider operation", "供应商不支持");
         }
         buildTaskCollectionPath(provider.getTaskQuerySuffix());
         return provider;
+    }
+
+    private boolean isMinimaxVideoProvider(AidAiProvider provider) {
+        String code = provider == null ? null : StrUtil.trim(provider.getProviderCode());
+        return MINIMAX_PROVIDER_CODE.equalsIgnoreCase(code)
+            || MINIMAX_H3_PROVIDER_CODE.equalsIgnoreCase(code);
     }
 
     record MinimaxCursor(int page, int limit, List<String> statuses, List<String> taskIds,

@@ -74,6 +74,7 @@ public class BillingDetailQueryServiceImpl implements IBillingDetailQueryService
     private static final String METER_TOKEN = "TOKEN";
     private static final String METER_PER_IMAGE = "PER_IMAGE";
     private static final String METER_PER_SECOND = "PER_SECOND";
+    private static final String METER_PER_CREDIT = "PER_CREDIT";
     private static final String METER_SKU_PACKAGE = "SKU_PACKAGE";
     private static final String METER_PER_CHAR = "PER_CHAR";
     private static final String METER_FIXED = "FIXED";
@@ -473,6 +474,12 @@ public class BillingDetailQueryServiceImpl implements IBillingDetailQueryService
                 item.setEstimated(BillingSettlementPolicy.isEstimated(
                         meterType, BILLING_MODE_SKU, JSONUtil.toJsonStr(rule)));
             }
+            case METER_PER_CREDIT ->
+            {
+                item.setUnit("PROVIDER_CREDIT");
+                item.setUnitName("供应商积分");
+                item.setEstimated(Boolean.TRUE);
+            }
             case METER_PER_CHAR ->
             {
                 item.setUnit("CHAR");
@@ -548,6 +555,7 @@ public class BillingDetailQueryServiceImpl implements IBillingDetailQueryService
                 item.setPricePerSecond(display(resolvePerSecondRaw(sku,
                         StrUtil.isBlank(sku.getMeterType())), priceMultiplier));
             }
+            case METER_PER_CREDIT -> item.setUnitPrice(display(sku.getPrice(), priceMultiplier));
             case METER_SKU_PACKAGE -> item.setPackagePrice(display(sku.getPrice(), priceMultiplier));
             case METER_PER_CHAR -> item.setUnitPrice(display(sku.getPricePerChar(), priceMultiplier));
             default -> item.setUnitPrice(display(sku.getPrice(), priceMultiplier));
@@ -665,6 +673,7 @@ public class BillingDetailQueryServiceImpl implements IBillingDetailQueryService
                 cols.add(new BillingColumnVO("durationMax", "时长上限", UNIT_SECOND, "number"));
                 cols.add(new BillingColumnVO("pricePerSecond", "每秒单价", CREDIT_UNIT, "number"));
             }
+            case METER_PER_CREDIT -> cols.add(new BillingColumnVO("unitPrice", "每供应商积分单价", CREDIT_UNIT, "number"));
             case METER_SKU_PACKAGE ->
             {
                 cols.add(new BillingColumnVO("resolution", "分辨率", null, "text"));
@@ -752,6 +761,7 @@ public class BillingDetailQueryServiceImpl implements IBillingDetailQueryService
     /** 计费口径中文名 */
     private String resolveMeterTypeName(String meterType)
     {
+        if (METER_PER_CREDIT.equals(meterType)) return "按供应商积分计费";
         return switch (meterType)
         {
             case METER_TOKEN -> "按Token阶梯计费";
@@ -768,6 +778,7 @@ public class BillingDetailQueryServiceImpl implements IBillingDetailQueryService
     /** 计费整体说明 */
     private String resolveBillingDesc(String meterType, BillingRule rule)
     {
+        if (METER_PER_CREDIT.equals(meterType)) return "按供应商实际积分用量与配置的人民币单价计费，提交前显示估算金额";
         if (Objects.equals(METER_PER_IMAGE, meterType) && hasOutputPixelUnitPricing(rule)) {
             return "按目标输出像素向上取整计算每张价格，再按实际生成张数结算；每单位像素数及价格见下方";
         }
@@ -847,6 +858,7 @@ public class BillingDetailQueryServiceImpl implements IBillingDetailQueryService
         return Objects.equals(METER_TOKEN, meterType)
                 || Objects.equals(METER_PER_IMAGE, meterType)
                 || Objects.equals(METER_PER_SECOND, meterType)
+                || Objects.equals(METER_PER_CREDIT, meterType)
                 || Objects.equals(METER_SKU_PACKAGE, meterType)
                 || Objects.equals(METER_PER_CHAR, meterType);
     }

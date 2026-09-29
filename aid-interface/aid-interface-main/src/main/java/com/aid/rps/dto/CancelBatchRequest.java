@@ -15,4 +15,7 @@ public class CancelBatchRequest
     /** 要取消的任务ID列表 */
     @NotEmpty(message = "任务列表不能为空")
     private List<Long> taskIds;
+
+    /** EXTRACT（默认，兼容原接口）或 MEDIA（图片/视频媒体任务）。 */
+    private String taskSource;
 }

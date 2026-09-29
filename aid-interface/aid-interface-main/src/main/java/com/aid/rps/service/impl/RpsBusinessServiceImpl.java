@@ -1047,10 +1047,20 @@ public class RpsBusinessServiceImpl implements IRpsBusinessService {
         AidRolePropScene mainAsset = getMainAssetOrThrow(form.getAssetId(), userId);
         String assetType = mainAsset.getAssetType();
 
+        // 平铺字段先与库存提示词合并，手动和自动形态共用同一保存格式。
+        if (StrUtil.isBlank(request.getPromptText()) && hasStructuredFields(assetType, request))
+        {
+            com.fasterxml.jackson.databind.node.ObjectNode baseNode =
+                    parseStoredFormPromptTextLenient(assetType, request.getId(), form.getPromptText());
+            mergeFormFlatFieldsIntoPromptText(assetType, request, baseNode);
+            normalizeFormPromptText(assetType, baseNode);
+            request.setPromptText(baseNode.toString());
+        }
+
         // ---- 按创建来源分流：manual 走轻量更新，auto 走完整更新 ----
         if (Objects.equals(CREATE_SOURCE_MANUAL, form.getCreateSource()))
         {
-            // 手动数据：仅允许修改 name / changeReason，其它结构化字段 / promptText 即使传了也不处理
+            // 手动形态也需要保存设定提示词；否则接口成功但刷新后内容丢失。
             // name 强校验：传了就必须非空
             if (Objects.nonNull(request.getName()) && StrUtil.isBlank(request.getName()))
             {
@@ -1070,29 +1080,19 @@ public class RpsBusinessServiceImpl implements IRpsBusinessService {
             {
                 manualWrapper.set(AidRolePropSceneForm::getChangeReason, request.getChangeReason());
             }
+            if (StrUtil.isNotBlank(request.getPromptText()))
+            {
+                manualWrapper.set(AidRolePropSceneForm::getPromptText, request.getPromptText());
+            }
             manualWrapper.set(AidRolePropSceneForm::getUpdateTime, DateUtils.getNowDate());
             manualWrapper.set(AidRolePropSceneForm::getUpdateBy, String.valueOf(userId));
             rpsFormService.update(manualWrapper);
+            syncMainAssetIntroductionFromPromptText(form.getAssetId(), request.getPromptText());
             AidRolePropSceneForm manualUpdated = rpsFormService.getById(request.getId());
             return convertToFormVO(manualUpdated, assetType);
         }
 
         // ---- 自动（auto）数据的完整更新逻辑 ----
-        // ---- 平铺字段增量合并 promptText ----
-        // 若前端未传 promptText 但传了平铺字段，先读库存 promptText，再做字段级合并
-        if (StrUtil.isBlank(request.getPromptText()) && hasStructuredFields(request))
-        {
-            // 解析库存旧 promptText（非法/空值降级为空对象）
-            com.fasterxml.jackson.databind.node.ObjectNode baseNode =
-                    parseStoredFormPromptTextLenient(assetType, request.getId(), form.getPromptText());
-            // 把本次平铺字段增量合并进旧节点（只覆盖显式传入的字段）
-            mergeFormFlatFieldsIntoPromptText(assetType, request, baseNode);
-            // 保证 assetType / promptVersion 始终存在
-            normalizeFormPromptText(assetType, baseNode);
-            // 最终完整 promptText 回写到 request
-            request.setPromptText(baseNode.toString());
-        }
-
         // 校验至少传了一个有效更新内容
         if (StrUtil.isBlank(request.getName())
                 && StrUtil.isBlank(request.getChangeReason())
@@ -2070,22 +2070,30 @@ public class RpsBusinessServiceImpl implements IRpsBusinessService {
     }
 
     /**
-     * 判断请求中是否携带了平铺结构化字段（用于决定是否需要自动组装 promptText）。
-     * 只要存在任何一个非空的 promptText 内部字段，即视为"有平铺字段"。
+     * 判断请求中是否携带当前资产类型支持的平铺结构化字段。
      */
-    private boolean hasStructuredFields(RpsUpdateFormRequest req)
+    private boolean hasStructuredFields(String assetType, RpsUpdateFormRequest req)
     {
-        // character
-        if (StrUtil.isNotBlank(req.getDescriptions())) return true;
-        if (Objects.nonNull(req.getAppearanceId())) return true;
-        // scene / prop（stylist LLM 输出格式平铺字段）
-        if (StrUtil.isNotBlank(req.getTitle())) return true;
-        if (StrUtil.isNotBlank(req.getPrompt())) return true;
-        if (StrUtil.isNotBlank(req.getPromptType())) return true;
-        if (StrUtil.isNotBlank(req.getAspectRatio())) return true;
-        if (StrUtil.isNotBlank(req.getImageUsage())) return true;
-        if (StrUtil.isNotBlank(req.getReference())) return true;
-        if (Objects.nonNull(req.getViewpoints())) return true;
+        if (Objects.equals(ASSET_TYPE_CHARACTER, assetType))
+        {
+            return StrUtil.isNotBlank(req.getDescriptions()) || Objects.nonNull(req.getAppearanceId());
+        }
+        if (Objects.equals(ASSET_TYPE_SCENE, assetType))
+        {
+            return StrUtil.isNotBlank(req.getTitle())
+                    || StrUtil.isNotBlank(req.getPrompt())
+                    || StrUtil.isNotBlank(req.getPromptType())
+                    || StrUtil.isNotBlank(req.getAspectRatio())
+                    || StrUtil.isNotBlank(req.getImageUsage())
+                    || StrUtil.isNotBlank(req.getReference())
+                    || Objects.nonNull(req.getViewpoints());
+        }
+        if (Objects.equals(ASSET_TYPE_PROP, assetType))
+        {
+            return StrUtil.isNotBlank(req.getTitle())
+                    || StrUtil.isNotBlank(req.getPrompt())
+                    || StrUtil.isNotBlank(req.getPromptType());
+        }
         return false;
     }
 

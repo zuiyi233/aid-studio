@@ -263,7 +263,7 @@ INSERT INTO `aid_ai_model` (`id`,`provider_id`,`model_code`,`real_model_code`,`m
 (105,21,'kling-3.0-omni-first-last','kling-3.0-omni','可灵 3.0 Omni 首尾帧','video','image_to_video',0,1,'/omni-video/kling-3.0-omni','kling-video',100,'1','0',NOW(),'system','Omni 首帧+尾帧；最多3个主体；官方人民币原价已预置、计费倍率1、默认停用','SKU',@kling_omni_no_reference_video_billing_rule,1,1,1,1,1,1,1,1,1,1,1,1,'720P','16:9',5,'{"requiresConfiguredBilling":true,"klingScenario":"omni_first_last","sizeOptions":["720P","1080P","4K"],"aspectRatioOptions":["16:9","9:16","1:1"],"durationOptions":[3,4,5,6,7,8,9,10,11,12,13,14,15],"audioModeOptions":["off","native"],"defaultSize":"720P","defaultAspectRatio":"16:9","defaultDurationSeconds":5,"minReferenceImages":2,"maxReferenceImages":2,"defaultAudio":false,"supportsAudio":true,"supportsElements":true,"maxElements":3,"supportsVoiceControl":false,"sceneRules":{"imageToVideo":{"supportsDuration":true,"supportsSizePreset":true,"supportsAspectRatio":true,"aspectRatioFollowInput":true}}}',1),
 (106,21,'kling-3.0-omni-reference','kling-3.0-omni','可灵 3.0 Omni 多参考','video','image_to_video',0,1,'/omni-video/kling-3.0-omni','kling-video',100,'1','0',NOW(),'system','Omni 参考图/主体；按官方组合上限；官方人民币原价已预置、计费倍率1、默认停用','SKU',@kling_omni_no_reference_video_billing_rule,1,1,1,1,1,1,1,1,1,1,1,1,'720P','16:9',5,'{"requiresConfiguredBilling":true,"klingScenario":"omni_reference","sizeOptions":["720P","1080P","4K"],"aspectRatioOptions":["16:9","9:16","1:1"],"durationOptions":[3,4,5,6,7,8,9,10,11,12,13,14,15],"audioModeOptions":["off","native"],"defaultSize":"720P","defaultAspectRatio":"16:9","defaultDurationSeconds":5,"minReferenceImages":0,"maxReferenceImages":7,"defaultAudio":false,"supportsAudio":true,"supportsElements":true,"maxElements":7,"elementTypeRequired":true,"supportsVoiceControl":false,"sceneRules":{"imageToVideo":{"supportsDuration":true,"supportsSizePreset":true,"supportsAspectRatio":true,"aspectRatioFollowInput":false}}}',1),
 (107,21,'kling-3.0-omni-feature-video','kling-3.0-omni','可灵 3.0 Omni 视频特征参考','video','video_to_video',0,1,'/omni-video/kling-3.0-omni','kling-video',100,'1','0',NOW(),'system','Omni feature_video；支持参考图/多图主体组合或单视频角色主体；multi_shot=true/audio=off；官方人民币原价已预置、计费倍率1、默认停用','SKU',@kling_omni_reference_video_billing_rule,1,1,1,1,1,1,1,0,1,1,0,0,'720P',NULL,5,'{"requiresConfiguredBilling":true,"klingScenario":"omni_feature_video","sizeOptions":["720P","1080P","4K"],"durationOptions":[3,4,5,6,7,8,9,10,11,12,13,14,15],"audioModeOptions":["off"],"defaultSize":"720P","defaultDurationSeconds":5,"minReferenceImages":0,"maxReferenceImages":4,"defaultAudio":false,"supportsAudio":false,"supportsVideoInput":true,"maxReferenceVideos":1,"supportsElements":true,"maxElements":4,"elementTypeRequired":true,"referenceVideoRules":{"maxVideoCharacterElements":1,"maxReferenceImagesAndMultiImageElements":4,"forbidVideoCharacterWithReferenceImages":true,"forbidMixedElementTypes":true},"supportsVoiceControl":false,"sceneRules":{"videoToVideo":{"supportsDuration":true,"supportsSizePreset":true,"supportsAspectRatio":false}}}',1),
-(108,21,'kling-3.0-omni-edit','kling-3.0-omni','可灵 3.0 Omni 视频编辑','video','video_to_video',0,1,'/omni-video/kling-3.0-omni','kling-video',100,'1','0',NOW(),'system','Omni base_video；multi_shot=false；audio仅off/original；官方人民币原价已预置、计费倍率1、默认停用','SKU',@kling_omni_reference_video_billing_rule,1,1,1,1,1,1,1,0,1,1,0,0,'720P',NULL,5,'{"requiresConfiguredBilling":true,"klingScenario":"omni_edit","sizeOptions":["720P","1080P","4K"],"durationOptions":[3,4,5,6,7,8,9,10,11,12,13,14,15],"audioModeOptions":["off","original"],"defaultSize":"720P","defaultDurationSeconds":5,"minReferenceImages":0,"maxReferenceImages":4,"defaultAudio":false,"supportsAudio":false,"supportsVideoInput":true,"maxReferenceVideos":1,"supportsElements":true,"maxElements":4,"elementTypeRequired":true,"referenceVideoRules":{"maxVideoCharacterElements":1,"maxReferenceImagesAndMultiImageElements":4,"forbidVideoCharacterWithReferenceImages":true,"forbidMixedElementTypes":true},"supportsVoiceControl":false,"sceneRules":{"videoToVideo":{"supportsDuration":true,"supportsSizePreset":true,"supportsAspectRatio":false}}}',1);
+(108,21,'kling-3.0-omni-edit','kling-3.0-omni','可灵 3.0 Omni 视频编辑','video','video_to_video',0,1,'/omni-video/kling-3.0-omni','kling-video',100,'1','0',NOW(),'system','Omni base_video; video-edit official price pending; disabled','SKU',NULL,1,1,1,1,1,1,1,0,1,1,0,0,'720P',NULL,5,'{"requiresConfiguredBilling":true,"klingScenario":"omni_edit","sizeOptions":["720P","1080P","4K"],"durationOptions":[3,4,5,6,7,8,9,10,11,12,13,14,15],"audioModeOptions":["off","original"],"defaultSize":"720P","defaultDurationSeconds":5,"minReferenceImages":0,"maxReferenceImages":4,"defaultAudio":false,"supportsAudio":false,"supportsVideoInput":true,"maxReferenceVideos":1,"supportsElements":true,"maxElements":4,"elementTypeRequired":true,"referenceVideoRules":{"maxVideoCharacterElements":1,"maxReferenceImagesAndMultiImageElements":4,"forbidVideoCharacterWithReferenceImages":true,"forbidMixedElementTypes":true},"supportsVoiceControl":false,"sceneRules":{"videoToVideo":{"supportsDuration":true,"supportsSizePreset":true,"supportsAspectRatio":false}}}',1);
 INSERT INTO `aid_ai_model` (`id`,`provider_id`,`model_code`,`real_model_code`,`model_name`,`model_type`,`generate_mode`,`cost_credits`,`billing_multiplier`,`api_suffix`,`protocol`,`priority`,`status`,`del_flag`,`create_time`,`create_by`,`remark`,`billing_mode`,`billing_rule_json`,`billing_version`,`schedule_strategy_json`,`supports_text_input`,`supports_system_prompt`,`supports_image_input`,`supports_multi_image_input`,`max_output_count`,`default_output_count`,`supports_aspect_ratio`,`supports_size_preset`,`supports_duration`,`supports_first_frame`,`supports_last_frame`,`default_size_code`,`default_aspect_ratio`,`default_duration_seconds`,`capability_json`,`capability_inited`) VALUES
 (109,11,'minimax-h3-t2v','MiniMax-H3','MiniMax H3 文生视频','video','text_to_video',0,1,'/v2/video_generation','minimax-h3-video',120,'1','0',NOW(),'system','H3 文生视频；官方人民币原价；默认停用','SKU',@minimax_h3_billing_rule,1,@minimax_h3_schedule,1,1,0,0,1,1,1,1,1,0,0,'768P','16:9',5,'{"requiresConfiguredBilling":true,"videoScenario":"text_to_video","maxPromptCharacters":7000,"sizeOptions":["768P","2K"],"aspectRatioOptions":["21:9","16:9","4:3","1:1","3:4","9:16"],"durationOptions":[4,5,6,7,8,9,10,11,12,13,14,15],"defaultSize":"768P","defaultAspectRatio":"16:9","defaultDurationSeconds":5,"minReferenceImages":0,"maxReferenceImages":0,"rateLimitConcurrencyPaid":15,"rateLimitConcurrencyFree":2,"sceneRules":{"textToVideo":{"supportsDuration":true,"supportsSizePreset":true,"supportsAspectRatio":true}}}',1),
 (110,11,'minimax-h3-i2v-first','MiniMax-H3','MiniMax H3 首帧图生视频','video','image_to_video',0,1,'/v2/video_generation','minimax-h3-video',119,'1','0',NOW(),'system','H3 首帧图生视频；比例自适应；默认停用','SKU',@minimax_h3_billing_rule,1,@minimax_h3_schedule,1,1,1,0,1,1,0,1,1,1,0,'768P','adaptive',5,'{"requiresConfiguredBilling":true,"videoScenario":"first_frame","maxPromptCharacters":7000,"sizeOptions":["768P","2K"],"aspectRatioOptions":["adaptive"],"durationOptions":[4,5,6,7,8,9,10,11,12,13,14,15],"defaultSize":"768P","defaultAspectRatio":"adaptive","defaultDurationSeconds":5,"minReferenceImages":1,"maxReferenceImages":1,"referenceImageFormats":["jpg","jpeg","png","webp","heic","heif"],"referenceImageMaxFileSizeMb":30,"referenceImageMinDimensionPixels":256,"referenceImageMaxDimensionPixels":5760,"referenceImageMinAspectRatio":0.4,"referenceImageMaxAspectRatio":2.5,"rateLimitConcurrencyPaid":15,"rateLimitConcurrencyFree":2,"sceneRules":{"imageToVideo":{"supportsDuration":true,"supportsSizePreset":true,"supportsAspectRatio":false,"aspectRatioFollowInput":true}}}',1),
@@ -1412,7 +1412,7 @@ INSERT INTO `aid_config` VALUES (336, 'basic', 'company_address', '', '公司地
 INSERT INTO `aid_config` VALUES (337, 'basic', 'service_email', '', '服务邮箱', '0', 14, '2026-07-16 14:56:46', 'admin', 'admin', '2026-07-21 22:53:40', NULL, 1, NULL, 0);
 INSERT INTO `aid_config` VALUES (338, 'basic', 'contact_phone', '', '联系电话', '0', 15, '2026-07-16 14:56:47', 'admin', 'admin', '2026-07-21 23:03:10', NULL, 1, NULL, 0);
 INSERT INTO `aid_config` VALUES (339, 'basic', 'work_publish_enabled', 'true', '作品发布', '0', 16, '2026-07-16 14:56:47', 'admin', 'admin', '2026-07-21 22:54:35', NULL, 1, NULL, 0);
-INSERT INTO `aid_config` VALUES (343, 'system_upgrade', 'manifest_url', '', '版本更新清单地址', '0', 1, '2026-07-20 08:43:42', 'admin', 'admin', '2026-07-23 01:17:23', NULL, NULL, NULL, 0);
+INSERT INTO `aid_config` VALUES (343, 'system_upgrade', 'manifest_url', '/aid/release/latest.json', '版本更新清单地址', '0', 1, '2026-07-20 08:43:42', 'admin', 'admin', '2026-07-23 01:17:23', NULL, NULL, NULL, 0);
 INSERT INTO `aid_config` VALUES (344, 'system_upgrade', 'updater_download_url', '', '升级器下载地址', '0', 2, '2026-07-20 08:43:42', 'admin', 'admin', '2026-07-20 16:43:12', NULL, NULL, NULL, 0);
 INSERT INTO `aid_config` VALUES (345, 'system_upgrade', 'updater_health_file', '', '升级器健康文件路径', '0', 3, '2026-07-20 08:43:42', 'admin', 'admin', '2026-07-20 16:43:12', NULL, NULL, NULL, 0);
 INSERT INTO `aid_config` VALUES (346, 'official_gateway', 'enabled', 'false', '官方统一网关总开关（true=全局厂商走官方网关）', '0', 1, '2026-07-20 08:43:42', 'admin', 'admin', '2026-07-22 16:33:46', NULL, NULL, NULL, 0);
@@ -1487,6 +1487,18 @@ INSERT INTO `aid_config` VALUES (436, 'media_eta', 'queue_p50_seconds', '15', '�
 INSERT INTO `aid_config` VALUES (437, 'media_eta', 'queue_p90_seconds', '60', '排队默认P90秒数', '0', 13, '2026-08-29 00:00:00', 'system', 'system', '2026-08-29 00:00:00', '排队样本不足时的保守等待时间', NULL, NULL, 0);
 INSERT INTO `aid_config` VALUES (438, 'account_security', 'cancel_re_registration_enabled', 'true', '注销后再次注册限制开关', '0', 1, '2026-08-30 00:00:00', 'system', 'system', '2026-08-30 00:00:00', '关闭后注销账号可立即再次注册', NULL, NULL, 0);
 INSERT INTO `aid_config` VALUES (439, 'account_security', 'cancel_re_registration_days', '15', '注销后再次注册限制天数', '0', 2, '2026-08-30 00:00:00', 'system', 'system', '2026-08-30 00:00:00', '开启限制时生效，允许设置1至3650天', NULL, NULL, 0);
+INSERT INTO `aid_config` (`category`, `config_name`, `config_value`, `config_dict`, `del_flag`, `order_num`, `create_time`, `create_by`, `remark`) VALUES
+('image_object_detection', 'enabled', 'false', '启用图像主体检测', '0', 1, NOW(), 'system', '默认关闭；平台承担供应商费用'),
+('image_object_detection', 'provider', 'tencent_ci', '检测供应商', '0', 2, NOW(), 'system', '腾讯云数据万象'),
+('image_object_detection', 'credentialSource', 'COS_STORAGE', '凭证来源', '0', 3, NOW(), 'system', 'COS_STORAGE 或 DEDICATED'),
+('image_object_detection', 'region', '', '独立凭证地域', '0', 4, NOW(), 'system', '仅 DEDICATED 使用'),
+('image_object_detection', 'bucketName', '', '独立调用桶', '0', 5, NOW(), 'system', '仅 DEDICATED 使用'),
+('image_object_detection', 'secretId', '', '独立 SecretId', '0', 6, NOW(), 'system', '仅 DEDICATED 使用'),
+('image_object_detection', 'secretKey', '', '独立 SecretKey', '0', 7, NOW(), 'system', '仅 DEDICATED 使用'),
+('image_object_detection', 'cosImageAccessMode', 'COS_OBJECT', 'COS 原图取图方式', '0', 8, NOW(), 'system', 'COS_OBJECT 或 PUBLIC_URL'),
+('image_object_detection', 'connectTimeoutMs', '3000', '连接超时毫秒', '0', 9, NOW(), 'system', NULL),
+('image_object_detection', 'readTimeoutMs', '15000', '读取超时毫秒', '0', 10, NOW(), 'system', NULL),
+('image_object_detection', 'maxCallsPerUserMinute', '10', '单用户每分钟调用上限', '0', 11, NOW(), 'system', NULL);
 
 -- ----------------------------
 -- Table structure for aid_episode_editor
@@ -2121,6 +2133,40 @@ CREATE TABLE `aid_media_task`  (
 -- ----------------------------
 -- Records of aid_media_task
 -- ----------------------------
+
+-- Tencent and other media processors record input references and owned temporary files here.
+DROP TABLE IF EXISTS `aid_media_task_file`;
+CREATE TABLE `aid_media_task_file` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `media_task_id` bigint(20) NULL DEFAULT NULL,
+  `provider_token` varchar(64) NOT NULL,
+  `file_role` varchar(32) NOT NULL,
+  `storage_provider` varchar(20) NOT NULL,
+  `region` varchar(64) NOT NULL,
+  `bucket_name` varchar(128) NOT NULL,
+  `object_key` varchar(1024) NOT NULL,
+  `stored_url` varchar(1000) NULL DEFAULT NULL,
+  `content_type` varchar(100) NULL DEFAULT NULL,
+  `file_size` bigint(20) NULL DEFAULT NULL,
+  `temporary` tinyint(1) NOT NULL DEFAULT 0,
+  `cleanup_state` varchar(20) NOT NULL DEFAULT 'ACTIVE',
+  `create_time` datetime NOT NULL,
+  `update_time` datetime NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_media_file_token_role` (`provider_token`, `file_role`),
+  KEY `idx_media_file_task` (`media_task_id`, `cleanup_state`),
+  KEY `idx_media_file_object` (`storage_provider`, `bucket_name`, `region`, `object_key`(191), `cleanup_state`),
+  KEY `idx_media_file_cleanup` (`temporary`, `cleanup_state`, `create_time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='媒体任务输入引用与临时文件归属';
+
+INSERT INTO `aid_config` (`category`, `config_name`, `config_value`, `config_dict`, `del_flag`, `order_num`, `create_time`, `create_by`, `tenant_id`)
+VALUES ('tencent_media_cos', 'stagingPrefix', 'aid-ci/staging/', '腾讯云媒体处理临时对象目录', '0', 1, NOW(), 'system', 0);
+
+INSERT INTO `aid_config` (`category`, `config_name`, `config_value`, `config_dict`, `del_flag`, `order_num`, `create_time`, `create_by`, `tenant_id`)
+VALUES
+  ('tencent_media_portrait', 'enabled', 'true', '腾讯云数据万象视频人像分割', '0', 1, NOW(), 'system', 0),
+  ('tencent_media_voice', 'enabled', 'true', '腾讯云数据万象人声与背景音分离', '0', 1, NOW(), 'system', 0),
+  ('tencent_media_subtitle', 'enabled', 'true', '腾讯云 MPS 去字幕', '0', 1, NOW(), 'system', 0);
 
 -- ----------------------------
 -- Table structure for aid_media_eta_stat
@@ -6676,6 +6722,7 @@ WHERE id=85 AND model_code='vidu-q3-lipsync' AND protocol='vidu-video'
   AND real_model_code='viduq3' AND JSON_EXTRACT(capability_json, '$.lipSync')=TRUE;
 
 -- BEGIN MODEL_CAPABILITY_INSTALLATION_DATA
+-- The matching unreleased upgrade backfills these public capability, protocol and alias records on older installations.
 UPDATE aid_ai_model SET config_version=1 WHERE id=1 AND model_code='qwen3.7-max';
 UPDATE aid_ai_model SET config_version=1 WHERE id=2 AND model_code='qwen3.7-plus';
 UPDATE aid_ai_model SET config_version=1 WHERE id=3 AND model_code='doubao-seed-2.0-pro-260215';
@@ -7239,6 +7286,27 @@ INSERT INTO aid_ai_business_model_binding (func_code, model_id, capability_code,
 INSERT INTO aid_ai_business_model_binding (func_code, model_id, capability_code, default_capability, defaults_json, sort_order, create_time, create_by) SELECT 'main_storyboard_image', 67, 'image_to_image', 1, NULL, 5, NOW(), 'installation' FROM DUAL WHERE NOT EXISTS (SELECT 1 FROM aid_ai_business_model_binding WHERE func_code='main_storyboard_image' AND model_id=67 AND capability_code='image_to_image');
 INSERT INTO aid_ai_business_model_binding (func_code, model_id, capability_code, default_capability, defaults_json, sort_order, create_time, create_by) SELECT 'image_edit', 67, 'image_to_image', 1, NULL, 6, NOW(), 'installation' FROM DUAL WHERE NOT EXISTS (SELECT 1 FROM aid_ai_business_model_binding WHERE func_code='image_edit' AND model_id=67 AND capability_code='image_to_image');
 INSERT INTO aid_ai_business_model_binding (func_code, model_id, capability_code, default_capability, defaults_json, sort_order, create_time, create_by) SELECT 'image_multi_grid', 67, 'image_to_image', 1, NULL, 7, NOW(), 'installation' FROM DUAL WHERE NOT EXISTS (SELECT 1 FROM aid_ai_business_model_binding WHERE func_code='image_multi_grid' AND model_id=67 AND capability_code='image_to_image');
+
+-- Form images without a reference require text_to_image; keep the existing image_to_image default.
+INSERT INTO aid_ai_business_model_binding
+  (func_code, model_id, capability_code, default_capability, defaults_json, sort_order,
+   create_time, create_by)
+SELECT b.func_code, b.model_id, 'text_to_image', 0, NULL, b.sort_order + 1,
+       NOW(), 'installation'
+FROM aid_ai_business_model_binding b
+JOIN aid_ai_model m ON m.id = b.model_id
+JOIN aid_ai_model_capability c ON c.model_id = b.model_id
+  AND c.capability_code = 'text_to_image'
+WHERE m.model_code IN ('agnes-image-2.0-flash', 'agnes-image-2.1-flash')
+  AND m.del_flag = '0'
+  AND b.func_code IN ('main_character_image', 'main_scene_image', 'main_prop_image')
+  AND b.capability_code = 'image_to_image'
+  AND JSON_UNQUOTE(JSON_EXTRACT(c.definition_json, '$.enabled')) = 'true'
+  AND NOT EXISTS (
+    SELECT 1 FROM aid_ai_business_model_binding x
+    WHERE x.func_code = b.func_code AND x.model_id = b.model_id
+      AND x.capability_code = 'text_to_image'
+  );
 INSERT INTO aid_ai_business_model_binding (func_code, model_id, capability_code, default_capability, defaults_json, sort_order, create_time, create_by) SELECT 'main_storyboard_video_image', 68, 'image_to_video', 1, NULL, 0, NOW(), 'installation' FROM DUAL WHERE NOT EXISTS (SELECT 1 FROM aid_ai_business_model_binding WHERE func_code='main_storyboard_video_image' AND model_id=68 AND capability_code='image_to_video');
 INSERT INTO aid_ai_business_model_binding (func_code, model_id, capability_code, default_capability, defaults_json, sort_order, create_time, create_by) SELECT 'main_storyboard_video_edge', 68, 'start_end_to_video', 1, NULL, 1, NOW(), 'installation' FROM DUAL WHERE NOT EXISTS (SELECT 1 FROM aid_ai_business_model_binding WHERE func_code='main_storyboard_video_edge' AND model_id=68 AND capability_code='start_end_to_video');
 INSERT INTO aid_ai_business_model_binding (func_code, model_id, capability_code, default_capability, defaults_json, sort_order, create_time, create_by) SELECT 'main_storyboard_video_grid', 68, 'image_to_video', 1, NULL, 2, NOW(), 'installation' FROM DUAL WHERE NOT EXISTS (SELECT 1 FROM aid_ai_business_model_binding WHERE func_code='main_storyboard_video_grid' AND model_id=68 AND capability_code='image_to_video');
@@ -8713,3 +8781,1802 @@ WHERE model.model_code='doubao-seedream-5-0-pro-260628'
                   WHERE existing.model_id=model.id
                     AND existing.capability_code='image_layer_decomposition'
                     AND existing.binding_code=COALESCE(source.binding_code,'route_layer_split'));
+
+-- WaveSpeed Depth Anything Video. Catalog only: never insert credentials or overwrite managed prices.
+INSERT INTO aid_ai_provider
+  (provider_name, provider_code, base_url, api_key, auth_header, auth_prefix,
+   api_key_apply_url, official_doc_url, official_price_url, task_query_suffix,
+   status, del_flag, create_time, create_by, remark, supports_callback,
+   schedule_strategy_json, provider_category)
+SELECT 'WaveSpeed AI', 'wavespeed', 'https://api.wavespeed.ai', '', 'Authorization', 'Bearer ',
+       'https://wavespeed.ai/dashboard/api-keys',
+       'https://wavespeed.ai/models/wavespeed-ai/depth-anything/video',
+       'https://wavespeed.ai/models/wavespeed-ai/depth-anything/video',
+       '/api/v3/predictions/%s/result', '1', '0', NOW(), 'system',
+       'Configure the credential and verify local pricing before enabling', 0,
+       '{"dispatchMode":"POLL_ONLY","supportsCallback":false,"firstPollDelaySeconds":2,"baseIntervalSeconds":5,"maxIntervalSeconds":60,"backoffFactor":1.5,"maxRetryCount":240,"maxLifeSeconds":14400,"progressTimeoutSeconds":1800,"maxConcurrency":10}',
+       'OFFICIAL'
+FROM DUAL WHERE NOT EXISTS (SELECT 1 FROM aid_ai_provider WHERE provider_code='wavespeed');
+
+INSERT INTO aid_ai_model
+  (provider_id, model_code, real_model_code, model_name, model_type, generate_mode,
+   api_suffix, protocol, priority, status, del_flag, create_time, create_by, remark,
+   billing_mode, billing_rule_json, billing_version, supports_text_input,
+   supports_system_prompt, supports_image_input, max_output_count, default_output_count,
+   supports_aspect_ratio, supports_size_preset, supports_duration,
+   supports_first_frame, supports_last_frame, capability_json, capability_inited,
+   official_price_url)
+SELECT provider.id, 'wavespeed-depth-anything-video',
+       'wavespeed-ai/depth-anything/video', 'WaveSpeed Depth Anything Video',
+       'video', 'video_to_video', '/api/v3/wavespeed-ai/depth-anything/video',
+       'wavespeed:depth-anything-video', 70, '1', '0', NOW(), 'system',
+       'Grayscale depth video; official USD 0.005 per billed second, 3s minimum; RMB selling price pending',
+       'SKU',
+       NULL,
+       1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0,
+       '{"requiresConfiguredBilling":true,"supportsVideoInput":true,"minReferenceVideos":1,"maxReferenceVideos":1,"maxReferenceImages":0,"maxReferenceAudios":0,"allowedInputs":["video"],"requiredInputs":["video"],"strictSceneRules":true,"sceneRules":{"videoToVideo":{"requiredInputs":["video"],"allowedInputs":["video"]}}}',
+       1, 'https://wavespeed.ai/models/wavespeed-ai/depth-anything/video'
+FROM aid_ai_provider provider
+WHERE provider.provider_code='wavespeed'
+  AND NOT EXISTS (SELECT 1 FROM aid_ai_model WHERE model_code='wavespeed-depth-anything-video');
+
+INSERT INTO aid_ai_model_capability
+  (model_id, capability_code, generate_mode, definition_json, sort_order, create_time, create_by)
+SELECT model.id, 'video_depth_map', 'video_to_video',
+       JSON_OBJECT('code','video_depth_map','label','视频深度图','generateMode','video_to_video',
+         'enabled',true,'defaultCapability',true,'evidenceStatus','OFFICIAL',
+         'sourceUrls',JSON_ARRAY('https://wavespeed.ai/models/wavespeed-ai/depth-anything/video'),
+         'presentation',JSON_OBJECT('supportsTextInput',false,'supportsImageInput',false,
+           'supportsVideoInput',true,'supportsAspectRatio',false,'supportsDuration',false),
+         'parameters',JSON_ARRAY(JSON_OBJECT('name','referenceVideoRecordIds','label','源视频',
+           'type','array','items',JSON_OBJECT('name','resourceId','label','视频资源 ID','type','integer'),
+           'required',true,'minimum',1,'maximum',1))), 0, NOW(), 'system'
+FROM aid_ai_model model WHERE model.model_code='wavespeed-depth-anything-video'
+  AND NOT EXISTS (SELECT 1 FROM aid_ai_model_capability existing
+                  WHERE existing.model_id=model.id AND existing.capability_code='video_depth_map');
+
+INSERT INTO aid_ai_model_protocol_binding
+  (model_id, capability_code, binding_code, protocol, definition_json,
+   sort_order, create_time, create_by)
+SELECT model.id, 'video_depth_map', 'wavespeed_depth', 'wavespeed:depth-anything-video',
+       JSON_OBJECT('code','wavespeed_depth','protocol','wavespeed:depth-anything-video',
+         'upstreamModel','wavespeed-ai/depth-anything/video',
+         'apiSuffix','/api/v3/wavespeed-ai/depth-anything/video',
+         'taskQuerySuffix','/api/v3/predictions/%s/result',
+         'billingMode','SKU','defaultBinding',true,'enabled',true,
+         'capability',CAST(model.capability_json AS JSON)), 0, NOW(), 'system'
+FROM aid_ai_model model WHERE model.model_code='wavespeed-depth-anything-video'
+  AND NOT EXISTS (SELECT 1 FROM aid_ai_model_protocol_binding existing
+                  WHERE existing.model_id=model.id AND existing.capability_code='video_depth_map'
+                    AND existing.binding_code='wavespeed_depth');
+
+-- Topaz video enhancement and optional Apollo interpolation. Price is CNY per provider credit;
+-- the API key, account state and administrator overrides stay outside migrations.
+INSERT INTO aid_ai_model
+  (provider_id, model_code, real_model_code, model_name, model_type, generate_mode,
+   api_suffix, protocol, priority, status, del_flag,
+   create_time, create_by, remark, billing_mode, billing_rule_json, billing_version,
+   supports_text_input, supports_system_prompt, supports_image_input,
+   max_output_count, default_output_count, supports_aspect_ratio,
+   supports_size_preset, supports_duration, supports_first_frame, supports_last_frame,
+   capability_json, capability_inited, official_price_url)
+SELECT p.id, 'topaz-proteus-video-express', 'prob-4', 'Topaz Proteus Video',
+       'video', 'video_to_video', '/video/express',
+       'topaz:video-express', 60, '1', '0', NOW(), 'system',
+       'Video enhancement, 1080p/2K/4K and optional Apollo quality interpolation; RMB selling price pending',
+       'SKU',
+       NULL,
+       1, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0,
+       '{"requiresConfiguredBilling":true,"supportsVideoInput":true,"minReferenceVideos":1,"maxReferenceVideos":1,"maxReferenceImages":0,"maxReferenceAudios":0,"allowedInputs":["video"],"requiredInputs":["video"],"maxDurationSeconds":3600,"strictSceneRules":true,"sceneRules":{"videoToVideo":{"requiredInputs":["video"],"allowedInputs":["video"]}},"targetResolutionOptions":["1080p","2K","4K"],"interpolationModeOptions":["NONE","HIGH_QUALITY"],"targetFpsMinimum":15,"targetFpsMaximum":240,"slowMotionFactorMinimum":1,"slowMotionFactorMaximum":16,"enhancementOptions":["videoType","auto","fieldOrder","focusFixLevel","compression","details","prenoise","noise","halo","preblur","blur","grain","grainSigma","grainSize","grainType","recoverOriginalDetailValue"]}',
+       1, 'https://developer.topazlabs.com/getting-started/model-pricing'
+FROM aid_ai_provider p WHERE p.provider_code='topaz'
+  AND NOT EXISTS (SELECT 1 FROM aid_ai_model m WHERE m.model_code='topaz-proteus-video-express');
+
+INSERT INTO aid_ai_model_capability
+  (model_id, capability_code, generate_mode, definition_json, sort_order,
+   create_time, create_by)
+SELECT m.id, 'video_enhance', 'video_to_video',
+       JSON_OBJECT('code','video_enhance','label','视频高清','generateMode','video_to_video',
+         'enabled',TRUE,'defaultCapability',TRUE,'evidenceStatus','OFFICIAL',
+         'sourceUrls',JSON_ARRAY('https://developer.topazlabs.com/reference/video/create-express-request/create-express-video-request'),
+         'presentation',JSON_OBJECT('supportsVideoInput',TRUE,'supportsDuration',TRUE),
+         'parameters',JSON_ARRAY(
+           JSON_OBJECT('name','referenceVideoRecordIds','label','源视频','type','array',
+             'items',JSON_OBJECT('name','resourceId','label','视频资源 ID','type','integer'),
+             'required',TRUE,'minimum',1,'maximum',1),
+           JSON_OBJECT('name','targetResolution','label','目标分辨率','type','string','choices',JSON_ARRAY('1080p','2K','4K')),
+           JSON_OBJECT('name','interpolationMode','label','补帧模式','type','string','choices',JSON_ARRAY('NONE','HIGH_QUALITY')),
+           JSON_OBJECT('name','targetFps','label','目标帧率','type','integer','minimum',15,'maximum',240),
+           JSON_OBJECT('name','slowMotionFactor','label','慢放倍数','type','integer','minimum',1,'maximum',16),
+           JSON_OBJECT('name','enhancement','label','高清调节','type','object'))),
+       0, NOW(), 'system'
+FROM aid_ai_model m WHERE m.model_code='topaz-proteus-video-express'
+  AND NOT EXISTS (SELECT 1 FROM aid_ai_model_capability c
+                  WHERE c.model_id=m.id AND c.capability_code='video_enhance');
+
+INSERT INTO aid_ai_model_protocol_binding
+  (model_id, capability_code, binding_code, protocol, definition_json,
+   sort_order, create_time, create_by)
+SELECT m.id, 'video_enhance', 'topaz_video_express', 'topaz:video-express',
+       JSON_OBJECT('code','topaz_video_express','protocol','topaz:video-express',
+         'upstreamModel','prob-4','apiSuffix','/video/express',
+         'taskQuerySuffix','/video/%s/status','billingMode','SKU',
+         'defaultBinding',TRUE,'enabled',TRUE,
+         'capability',CAST(m.capability_json AS JSON)), 0, NOW(), 'system'
+FROM aid_ai_model m WHERE m.model_code='topaz-proteus-video-express'
+  AND NOT EXISTS (SELECT 1 FROM aid_ai_model_protocol_binding b
+                  WHERE b.model_id=m.id AND b.capability_code='video_enhance'
+                    AND b.binding_code='topaz_video_express');
+
+-- Business model pools use the same model catalog and capability bindings as other tools.
+INSERT INTO aid_ai_model_func_config
+  (func_name, func_code, model_type, generate_mode, model_ids, status, del_flag,
+   create_time, create_by, remark)
+SELECT pool.func_name, pool.func_code, 'video', 'video_to_video', JSON_ARRAY(m.id),
+       '0', '0', NOW(), 'system', 'Administrator may add further compatible models'
+FROM (
+  SELECT '视频深度图' func_name, 'video_depth_map' func_code,
+         'wavespeed-depth-anything-video' model_code
+  UNION ALL
+  SELECT '视频高清与补帧', 'video_enhance', 'topaz-proteus-video-express'
+) pool
+JOIN aid_ai_model m ON m.model_code=pool.model_code
+WHERE NOT EXISTS (SELECT 1 FROM aid_ai_model_func_config f
+                  WHERE f.func_code=pool.func_code);
+
+INSERT INTO aid_ai_business_model_binding
+  (func_code, model_id, capability_code, default_capability, defaults_json,
+   sort_order, create_time, create_by)
+SELECT pool.func_code, m.id, pool.capability_code, 1, NULL, 0, NOW(), 'system'
+FROM (
+  SELECT 'video_depth_map' func_code, 'video_depth_map' capability_code,
+         'wavespeed-depth-anything-video' model_code
+  UNION ALL
+  SELECT 'video_enhance', 'video_enhance', 'topaz-proteus-video-express'
+) pool
+JOIN aid_ai_model m ON m.model_code=pool.model_code
+WHERE NOT EXISTS (SELECT 1 FROM aid_ai_business_model_binding b
+                  WHERE b.func_code=pool.func_code AND b.model_id=m.id
+                    AND b.capability_code=pool.capability_code);
+
+-- MiniMax H3 uses its own official provider. Do not copy credentials or overwrite managed JSON/SKUs.
+INSERT INTO aid_ai_provider
+  (provider_name, provider_code, logo_url, base_url, api_key, auth_header, auth_prefix,
+   api_key_apply_url, official_doc_url, official_price_url, task_query_suffix,
+   status, del_flag, create_time, create_by, remark, supports_callback, schedule_strategy_json,
+   provider_category)
+SELECT 'MiniMax H3', 'minimax_h3', '/brand-icons/minimax.png', 'https://api.minimax.cn', '',
+       'Authorization', 'Bearer ',
+       'https://platform.minimax.cn/user-center/basic-information/interface-key',
+       'https://platform.minimax.cn/docs/api-reference/video-generation-v2-create',
+       'https://platform.minimax.cn/docs/guides/pricing-paygo',
+       '/v2/query/video_generation/%s', '1', '0', NOW(), 'system',
+       'MiniMax H3/H3 Max official video API; configure credentials and billing before enabling',
+       0, '{"dispatchMode":"POLL_ONLY","supportsCallback":false,"firstPollDelaySeconds":10,"baseIntervalSeconds":10,"maxIntervalSeconds":60,"backoffFactor":1.5,"maxRetryCount":180,"maxLifeSeconds":7200,"progressTimeoutSeconds":900,"maxConcurrency":15}',
+       'OFFICIAL'
+FROM DUAL WHERE NOT EXISTS (SELECT 1 FROM aid_ai_provider WHERE provider_code='minimax_h3');
+
+-- Keep the historical disabled model ID for tasks while displaying every H3 model
+-- under the dedicated provider.  Credentials are never copied from MiniMax.
+UPDATE aid_ai_model legacy
+JOIN aid_ai_provider current_provider ON current_provider.id=legacy.provider_id
+JOIN aid_ai_provider h3_provider ON h3_provider.provider_code='minimax_h3'
+SET legacy.provider_id=h3_provider.id
+WHERE legacy.model_code='minimax-h3-t2v' AND legacy.status='1'
+  AND current_provider.provider_code='minimax';
+
+-- Existing installed model IDs, task history, administrator-edited billing and route JSON stay intact.
+-- New catalog entries are disabled until an administrator reviews their credentials and prices.
+INSERT INTO aid_ai_model
+  (provider_id, model_code, real_model_code, model_name, model_type, generate_mode,
+   api_suffix, protocol, priority, status, del_flag, create_time, create_by, remark,
+   billing_mode, billing_rule_json, billing_version, schedule_strategy_json,
+   supports_text_input, supports_system_prompt, supports_image_input,
+   supports_multi_image_input, max_output_count, default_output_count,
+   supports_aspect_ratio, supports_size_preset, supports_duration,
+   supports_first_frame, supports_last_frame, default_size_code,
+   default_aspect_ratio, default_duration_seconds, capability_json, capability_inited,
+   official_price_url)
+SELECT provider.id, 'minimax-h3-official', 'MiniMax-H3', 'MiniMax H3', 'video',
+       'text_to_video', '/v2/video_generation', 'minimax-h3-video', 120,
+       '1', '0', NOW(), 'system', 'Official H3; five generation capabilities; disabled by default',
+       'SKU', legacy.billing_rule_json, 1, legacy.schedule_strategy_json,
+       1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, '768P', '16:9', 5,
+       legacy.capability_json, 1,
+       'https://platform.minimax.cn/docs/guides/pricing-paygo'
+FROM aid_ai_model legacy
+JOIN aid_ai_provider provider ON provider.provider_code='minimax_h3'
+WHERE legacy.model_code='minimax-h3-t2v'
+  AND NOT EXISTS (SELECT 1 FROM aid_ai_model WHERE model_code='minimax-h3-official');
+
+INSERT INTO aid_ai_model
+  (provider_id, model_code, real_model_code, model_name, model_type, generate_mode,
+   api_suffix, protocol, priority, status, del_flag, create_time, create_by, remark,
+   billing_mode, billing_rule_json, billing_version, schedule_strategy_json,
+   supports_text_input, supports_system_prompt, supports_image_input,
+   supports_multi_image_input, max_output_count, default_output_count,
+   supports_aspect_ratio, supports_size_preset, supports_duration,
+   supports_first_frame, supports_last_frame, default_size_code,
+   default_aspect_ratio, default_duration_seconds, capability_json, capability_inited)
+SELECT provider.id, 'minimax-h3-max-official', 'MiniMax-H3-Max', 'MiniMax H3 Max', 'video',
+       'text_to_video', '/v2/video_generation', 'minimax-h3-video', 119,
+       '1', '0', NOW(), 'system', 'Official H3 Max; price unverified, no SKU, unavailable until configured',
+       'SKU', NULL, 1, legacy.schedule_strategy_json,
+       1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, '768P', '16:9', 5,
+       JSON_SET(legacy.capability_json,
+           '$.sizeOptions', JSON_ARRAY('480P','768P'),
+           '$.durationOptions', JSON_ARRAY(5,6,7,8,9,10,11,12,13,14,15)), 1
+FROM aid_ai_model legacy
+JOIN aid_ai_provider provider ON provider.provider_code='minimax_h3'
+WHERE legacy.model_code='minimax-h3-t2v'
+  AND NOT EXISTS (SELECT 1 FROM aid_ai_model WHERE model_code='minimax-h3-max-official');
+
+INSERT INTO aid_ai_model_capability
+  (model_id, capability_code, generate_mode, definition_json, sort_order, create_time, create_by)
+SELECT target.id, source.capability_code, source.generate_mode,
+       IF(target.model_code='minimax-h3-max-official',
+          JSON_SET(source.definition_json,
+            '$.parameters[1].choices', JSON_ARRAY(5,6,7,8,9,10,11,12,13,14,15),
+            '$.parameters[3].properties[0].choices', JSON_ARRAY('480P','768P')),
+          source.definition_json), source.sort_order, NOW(), 'system'
+FROM aid_ai_model legacy
+JOIN aid_ai_model_capability source ON source.model_id=legacy.id
+JOIN aid_ai_model target ON target.model_code IN ('minimax-h3-official','minimax-h3-max-official')
+WHERE legacy.model_code='minimax-h3-t2v'
+  AND NOT EXISTS (SELECT 1 FROM aid_ai_model_capability existing
+                  WHERE existing.model_id=target.id AND existing.capability_code=source.capability_code);
+
+INSERT INTO aid_ai_model_protocol_binding
+  (model_id, capability_code, binding_code, protocol, definition_json,
+   sort_order, create_time, create_by)
+SELECT target.id, source.capability_code, source.binding_code, source.protocol,
+       IF(target.model_code='minimax-h3-max-official',
+          JSON_REMOVE(JSON_SET(source.definition_json,
+            '$.upstreamModel', 'MiniMax-H3-Max',
+            '$.capability.sizeOptions', JSON_ARRAY('480P','768P'),
+            '$.capability.durationOptions', JSON_ARRAY(5,6,7,8,9,10,11,12,13,14,15),
+            '$.billingMode', 'SKU'), '$.billingRule'),
+          JSON_REMOVE(source.definition_json, '$.billingRule')), source.sort_order, NOW(), 'system'
+FROM aid_ai_model legacy
+JOIN aid_ai_model_protocol_binding source ON source.model_id=legacy.id
+JOIN aid_ai_model target ON target.model_code IN ('minimax-h3-official','minimax-h3-max-official')
+WHERE legacy.model_code='minimax-h3-t2v'
+  AND NOT EXISTS (SELECT 1 FROM aid_ai_model_protocol_binding existing
+                  WHERE existing.model_id=target.id
+                    AND existing.capability_code=source.capability_code
+                    AND existing.binding_code=source.binding_code);
+
+INSERT INTO aid_ai_business_model_binding
+  (func_code, model_id, capability_code, default_capability, defaults_json,
+   sort_order, create_time, create_by)
+SELECT source.func_code, target.id, source.capability_code, source.default_capability,
+       source.defaults_json, source.sort_order, NOW(), 'system'
+FROM aid_ai_model legacy
+JOIN aid_ai_business_model_binding source ON source.model_id=legacy.id
+JOIN aid_ai_model target ON target.model_code IN ('minimax-h3-official','minimax-h3-max-official')
+WHERE legacy.model_code='minimax-h3-t2v'
+  AND NOT EXISTS (SELECT 1 FROM aid_ai_business_model_binding existing
+                  WHERE existing.func_code=source.func_code
+                    AND existing.model_id=target.id
+                    AND existing.capability_code=source.capability_code);
+
+-- New installations do not expose or retain the former MiniMax-H3 model directory.
+DELETE alias_row FROM aid_ai_model_alias alias_row
+JOIN aid_ai_model model ON model.id=alias_row.model_id
+WHERE model.model_code='minimax-h3-t2v' AND model.provider_id=11;
+DELETE relation FROM aid_ai_business_model_binding relation
+JOIN aid_ai_model model ON model.id=relation.model_id
+WHERE model.model_code IN ('minimax-h3-t2v','minimax-h3-i2v-first',
+  'minimax-h3-i2v-last','minimax-h3-i2v-first-last','minimax-h3-reference')
+  AND model.provider_id=11;
+DELETE capability FROM aid_ai_model_capability capability
+JOIN aid_ai_model model ON model.id=capability.model_id
+WHERE model.model_code IN ('minimax-h3-t2v','minimax-h3-i2v-first',
+  'minimax-h3-i2v-last','minimax-h3-i2v-first-last','minimax-h3-reference')
+  AND model.provider_id=11;
+DELETE binding FROM aid_ai_model_protocol_binding binding
+JOIN aid_ai_model model ON model.id=binding.model_id
+WHERE model.model_code IN ('minimax-h3-t2v','minimax-h3-i2v-first',
+  'minimax-h3-i2v-last','minimax-h3-i2v-first-last','minimax-h3-reference')
+  AND model.provider_id=11;
+DELETE FROM aid_ai_model
+WHERE model_code IN ('minimax-h3-t2v','minimax-h3-i2v-first',
+  'minimax-h3-i2v-last','minimax-h3-i2v-first-last','minimax-h3-reference')
+  AND provider_id=11;
+
+-- Restricted legacy Music endpoints remain configurable but unavailable by default.
+-- No speculative price, enabled SKU, credential, or free fallback is introduced.
+INSERT INTO aid_ai_model
+  (provider_id, model_code, real_model_code, model_name, model_type, generate_mode,
+   api_suffix, protocol, priority, status, del_flag, create_time, create_by, remark,
+   billing_mode, billing_rule_json, billing_version, supports_text_input,
+   supports_system_prompt, supports_image_input, max_output_count, default_output_count,
+   capability_json, capability_inited)
+SELECT provider.id, catalog.code, catalog.code, catalog.label, 'audio', 'audio',
+       '/v1/music_generation', 'minimax-music', catalog.priority, '1', '0',
+       NOW(), 'system', 'Legacy official Music API restricted for new users; verify account and price before enabling',
+       'SKU', NULL, 1, 1, 0, 0, 1, 1,
+       JSON_OBJECT('requiresConfiguredBilling', true, 'provider', 'minimax',
+         'ttsVoiceRequired', false, 'ttsTextRequired', true,
+         'audioFormatOptions', JSON_ARRAY('mp3','wav','pcm'),
+         'audioSampleRateOptions', JSON_ARRAY(16000,24000,32000,44100),
+         'defaultAudioFormat', 'mp3', 'defaultAudioSampleRate', 44100), 1
+FROM (SELECT 'music-3.0' AS code, 'MiniMax Music 3.0' AS label, 80 AS priority
+      UNION ALL SELECT 'music-2.6', 'MiniMax Music 2.6', 79
+      UNION ALL SELECT 'music-cover', 'MiniMax Music Cover', 78) catalog
+JOIN aid_ai_provider provider ON provider.provider_code='minimax'
+WHERE NOT EXISTS (SELECT 1 FROM aid_ai_model existing WHERE existing.model_code=catalog.code);
+
+INSERT INTO aid_ai_model_capability
+  (model_id, capability_code, generate_mode, definition_json, sort_order, create_time, create_by)
+SELECT model.id, 'audio', 'audio',
+       JSON_OBJECT('code','audio','defaultCapability',true,'enabled',true,
+         'generateMode','audio','label','音乐生成',
+         'parameters',JSON_ARRAY(JSON_OBJECT('name','ttsText','label','音乐描述或歌词',
+                                             'type','string','widget','textarea')),
+         'presentation',JSON_OBJECT('supportsTextInput',true,'supportsSystemPrompt',false)),
+       0, NOW(), 'system'
+FROM aid_ai_model model
+WHERE model.model_code IN ('music-3.0','music-2.6','music-cover')
+  AND model.protocol='minimax-music'
+  AND NOT EXISTS (SELECT 1 FROM aid_ai_model_capability existing
+                  WHERE existing.model_id=model.id AND existing.capability_code='audio');
+
+INSERT INTO aid_ai_model_protocol_binding
+  (model_id, capability_code, binding_code, protocol, definition_json,
+   sort_order, create_time, create_by)
+SELECT model.id, 'audio', 'minimax_music', 'minimax-music',
+       JSON_OBJECT('code','minimax_music','protocol','minimax-music',
+         'upstreamModel',model.real_model_code,'apiSuffix','/v1/music_generation',
+         'billingMode','SKU','defaultBinding',true,'enabled',true,
+         'capability',JSON_OBJECT('requiresConfiguredBilling',true,'provider','minimax',
+           'ttsVoiceRequired',false,'ttsTextRequired',true,
+           'audioFormatOptions',JSON_ARRAY('mp3','wav','pcm'),
+           'audioSampleRateOptions',JSON_ARRAY(16000,24000,32000,44100),
+           'defaultAudioFormat','mp3','defaultAudioSampleRate',44100)),
+       0, NOW(), 'system'
+FROM aid_ai_model model
+WHERE model.model_code IN ('music-3.0','music-2.6','music-cover')
+  AND model.protocol='minimax-music'
+  AND NOT EXISTS (SELECT 1 FROM aid_ai_model_protocol_binding existing
+                  WHERE existing.model_id=model.id AND existing.capability_code='audio'
+                    AND existing.binding_code='minimax_music');
+
+-- Seedance 2.x public model catalog and protocol capability matrix.
+-- Preserve administrator-managed credentials, enablement, billing, multipliers and scheduling.
+SET @seedance20_full_capability := '{"requiresConfiguredBilling":true,"maxPromptCharacters":10000,"inputModalities":["TEXT","IMAGE","VIDEO","AUDIO"],"outputModalities":["VIDEO"],"supportsTextInput":true,"supportsImageInput":true,"supportsMultiImageInput":true,"supportsFirstFrame":true,"supportsLastFrame":true,"supportsSizePreset":true,"supportsAspectRatio":true,"supportsDuration":true,"defaultSize":"720P","defaultAspectRatio":"16:9","defaultDurationSeconds":5,"sizeOptions":["480P","720P","1080P","4K"],"aspectRatioOptions":["adaptive","16:9","9:16","4:3","3:4","1:1","21:9"],"durationOptions":[-1,4,5,6,7,8,9,10,11,12,13,14,15],"maxReferenceImages":9,"maxReferenceVideos":3,"maxReferenceAudios":3,"maxReferenceMaterials":15,"maxInputMediaTotalFileSizeMb":64,"supportsBase64Image":true,"supportsVideoInput":true,"supportsReferenceAudio":true,"referenceAudioRequiresVisualInput":true,"referenceImageFormats":["jpg","jpeg","png","webp","bmp","tiff","gif","heic","heif"],"referenceImageMaxFileSizeMb":30,"referenceImageMinDimensionPixels":300,"referenceImageMaxDimensionPixels":6000,"referenceImageMinAspectRatio":0.4,"referenceImageMaxAspectRatio":2.5,"referenceVideoFormats":["mp4","mov"],"referenceVideoMaxFileSizeMb":200,"referenceVideoMinDurationSeconds":2,"referenceVideoMaxDurationSeconds":15,"referenceVideoMaxTotalDurationSeconds":15,"referenceVideoMinDimensionPixels":300,"referenceVideoMaxDimensionPixels":6000,"referenceVideoMinAspectRatio":0.4,"referenceVideoMaxAspectRatio":2.5,"referenceVideoMinFps":24,"referenceVideoMaxFps":60,"referenceAudioFormats":["wav","mp3"],"referenceAudioMaxFileSizeMb":15,"referenceAudioMinDurationSeconds":2,"referenceAudioMaxDurationSeconds":15,"referenceAudioMaxTotalDurationSeconds":15,"supportsAudio":true,"defaultAudio":true,"defaultOutputFormat":"mp4","outputFormatOptions":["mp4"],"supportsOutputFormatParameter":false,"supportsReturnLastFrame":true,"supportsWebSearch":true,"supportsCameraFixed":true,"supportsSeed":true,"supportsPriority":true,"supportsFrames":false,"supportsDraft":false,"supportsDraftUpgrade":false,"serviceTierOptions":["default"],"seedanceTaskTypeOptions":[],"timestampIntegerOnly":false,"allowedScenes":["textToVideo","imageToVideo","startEndToVideo","referenceToVideo","videoToVideo"],"strictSceneRules":true,"sceneRules":{"textToVideo":{"allowedInputs":["text"]},"imageToVideo":{"requiredInputs":["firstFrame"],"allowedInputs":["text","firstFrame"],"aspectRatioOptions":["adaptive"],"defaultAspectRatio":"adaptive"},"startEndToVideo":{"requiredInputs":["firstFrame","lastFrame"],"allowedInputs":["text","firstFrame","lastFrame"],"aspectRatioOptions":["adaptive"],"defaultAspectRatio":"adaptive"},"referenceToVideo":{"requiredAnyOf":["image","video"],"allowedInputs":["text","image","video","audio"]},"videoToVideo":{"requiredInputs":["video"],"allowedInputs":["text","image","video","audio"]}}}';
+SET @seedance20_small_capability := JSON_SET(
+  JSON_EXTRACT(@seedance20_full_capability, '$'),
+  '$.sizeOptions', JSON_ARRAY('480P','720P')
+);
+SET @seedance25_fire_capability := '{"requiresConfiguredBilling":true,"maxPromptCharacters":10000,"inputModalities":["TEXT","IMAGE","VIDEO","AUDIO"],"outputModalities":["VIDEO"],"supportsTextInput":true,"supportsImageInput":true,"supportsMultiImageInput":true,"supportsFirstFrame":true,"supportsLastFrame":true,"supportsSizePreset":true,"supportsAspectRatio":true,"supportsDuration":true,"defaultSize":"720P","defaultAspectRatio":"adaptive","defaultDurationSeconds":5,"sizeOptions":["480P","720P"],"aspectRatioOptions":["adaptive","16:9","9:16","4:3","3:4","1:1","21:9"],"durationOptions":[-1,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30],"maxReferenceImages":30,"maxReferenceVideos":10,"maxReferenceAudios":10,"maxReferenceMaterials":50,"supportsBase64Image":true,"supportsVideoInput":true,"supportsReferenceAudio":true,"referenceAudioRequiresVisualInput":false,"referenceImageFormats":["jpg","jpeg","png","webp","bmp","tiff","gif","heic","heif"],"referenceImageMaxFileSizeMb":30,"referenceImageMinDimensionPixels":300,"referenceImageMaxDimensionPixels":6000,"referenceImageMinAspectRatio":0.4,"referenceImageMaxAspectRatio":2.5,"referenceVideoFormats":["mp4","mov"],"referenceVideoMaxFileSizeMb":200,"referenceVideoMinDurationSeconds":2,"referenceVideoMaxDurationSeconds":30,"referenceVideoMaxTotalDurationSeconds":30,"referenceVideoMinDimensionPixels":300,"referenceVideoMaxDimensionPixels":6000,"referenceVideoMinAspectRatio":0.4,"referenceVideoMaxAspectRatio":2.5,"referenceVideoMinFps":24,"referenceVideoMaxFps":60,"referenceAudioFormats":["wav","mp3"],"referenceAudioMaxFileSizeMb":15,"referenceAudioMinDurationSeconds":2,"referenceAudioMaxDurationSeconds":30,"referenceAudioMaxTotalDurationSeconds":30,"supportsAudio":true,"defaultAudio":true,"defaultOutputFormat":"mp4","outputFormatOptions":["mp4","mov"],"supportsOutputFormatParameter":true,"supportsReturnLastFrame":true,"supportsWebSearch":true,"supportsCameraFixed":true,"supportsSeed":true,"supportsPriority":true,"supportsFrames":false,"supportsDraft":false,"supportsDraftUpgrade":false,"serviceTierOptions":["default"],"seedanceTaskTypeOptions":["auto","edit","extend"],"timestampIntegerOnly":true,"timestampGranularitySeconds":1,"allowedScenes":["textToVideo","imageToVideo","startEndToVideo","referenceToVideo","videoToVideo"],"strictSceneRules":true,"sceneRules":{"textToVideo":{"allowedInputs":["text"]},"imageToVideo":{"requiredInputs":["firstFrame"],"allowedInputs":["text","firstFrame"],"aspectRatioOptions":["adaptive"],"defaultAspectRatio":"adaptive"},"startEndToVideo":{"requiredInputs":["firstFrame","lastFrame"],"allowedInputs":["text","firstFrame","lastFrame"],"aspectRatioOptions":["adaptive"],"defaultAspectRatio":"adaptive"},"referenceToVideo":{"requiredAnyOf":["image","video","audio"],"allowedInputs":["text","image","video","audio"]},"videoToVideo":{"requiredInputs":["video"],"allowedInputs":["text","image","video","audio"]}}}';
+SET @seedance25_tokendance_capability := JSON_SET(
+  JSON_EXTRACT(@seedance25_fire_capability, '$'),
+  '$.sizeOptions', JSON_ARRAY('480P','720P','1080P'),
+  '$.seedanceTaskTypeOptions', JSON_ARRAY('reference','edit','extend','auto')
+);
+
+-- FireMountain 2.0 and Fast already exist in older installations. Replace only the public
+-- capability contract; billing and operational settings are deliberately left untouched.
+UPDATE aid_ai_model m
+JOIN aid_ai_provider p ON p.id=m.provider_id AND p.provider_code='volcengine'
+SET m.config_version=COALESCE(m.config_version,0)+1,
+    m.capability_json=IF(m.model_code='doubao-seedance-2.0',
+      @seedance20_full_capability,@seedance20_small_capability),
+    m.protocol='seedance-video',m.api_suffix='/api/v3/contents/generations/tasks',
+    m.supports_text_input=1,m.supports_system_prompt=0,m.supports_image_input=1,
+    m.supports_multi_image_input=1,m.supports_aspect_ratio=1,m.supports_size_preset=1,
+    m.supports_duration=1,m.supports_first_frame=1,m.supports_last_frame=1,
+    m.default_size_code='720P',m.default_aspect_ratio='16:9',m.default_duration_seconds=5,
+    m.capability_inited=1,m.update_time=NOW(),m.update_by='system'
+WHERE m.model_code IN ('doubao-seedance-2.0','doubao-seedance-2.0-fast')
+  AND m.del_flag='0'
+  AND (NOT (m.capability_json <=> IF(m.model_code='doubao-seedance-2.0',
+        @seedance20_full_capability,@seedance20_small_capability))
+    OR m.protocol<>'seedance-video' OR m.supports_first_frame<>1 OR m.supports_last_frame<>1);
+
+INSERT INTO aid_ai_model
+  (provider_id,model_code,real_model_code,model_name,model_type,generate_mode,
+   cost_credits,billing_multiplier,api_suffix,protocol,priority,status,del_flag,
+   create_time,create_by,remark,billing_mode,billing_rule_json,billing_version,
+   schedule_strategy_json,supports_text_input,supports_system_prompt,supports_image_input,
+   supports_multi_image_input,max_output_count,default_output_count,supports_aspect_ratio,
+   supports_size_preset,supports_duration,supports_first_frame,supports_last_frame,
+   default_size_code,default_aspect_ratio,default_duration_seconds,capability_json,
+   capability_inited,official_price_url,is_free)
+SELECT p.id,'doubao-seedance-2.0-mini','doubao-seedance-2-0-mini-260615',
+       '豆包 Seedance 2.0 Mini','video','image_to_video',0,1,
+       '/api/v3/contents/generations/tasks','seedance-video',98,'1','0',NOW(),'system',
+       'FireMountain official Seedance 2.0 Mini; configure verified billing before enabling',
+       'SKU',NULL,1,'{"maxConcurrency":1}',1,0,1,1,1,1,1,1,1,1,1,
+       '720P','16:9',5,@seedance20_small_capability,1,
+       'https://docs.volcengine.com/docs/82379/1544106',0
+FROM aid_ai_provider p
+WHERE p.provider_code='volcengine' AND p.del_flag='0'
+  AND NOT EXISTS (SELECT 1 FROM aid_ai_model x
+                  WHERE x.model_code='doubao-seedance-2.0-mini');
+
+-- Seedance 2.5 has one catalog model. Scene choices live in capability and protocol rows.
+-- Existing split models are handled by the migration at the end of this batch.
+INSERT INTO aid_ai_model
+  (provider_id,model_code,real_model_code,model_name,model_type,generate_mode,
+   cost_credits,billing_multiplier,api_suffix,protocol,priority,status,del_flag,
+   create_time,create_by,update_time,update_by,remark,billing_mode,billing_rule_json,billing_version,
+   schedule_strategy_json,supports_text_input,supports_system_prompt,supports_image_input,
+   supports_multi_image_input,max_output_count,default_output_count,supports_aspect_ratio,
+   supports_size_preset,supports_duration,supports_first_frame,supports_last_frame,
+   default_size_code,default_aspect_ratio,default_duration_seconds,capability_json,
+   capability_inited,official_price_url,is_free)
+SELECT p.id,'doubao-seedance-2.5','doubao-seedance-2-5-260628','豆包 Seedance 2.5',
+       'video','text_to_video',0,1,'/api/v3/contents/generations/tasks',
+       'seedance-video',130,'1','0',NOW(),'system',NOW(),'system',
+       'FireMountain official Seedance 2.5; configure verified billing before enabling',
+       'SKU',NULL,1,'{"maxConcurrency":1}',1,0,1,1,1,1,1,1,1,1,1,
+       '720P','adaptive',5,@seedance25_fire_capability,1,
+       'https://docs.volcengine.com/docs/82379/1544106',0
+FROM aid_ai_provider p
+WHERE p.provider_code='volcengine' AND p.del_flag='0'
+  AND NOT EXISTS (SELECT 1 FROM aid_ai_model x WHERE x.provider_id=p.id
+    AND x.model_code='doubao-seedance-2.5' AND x.del_flag='0')
+  AND NOT EXISTS (SELECT 1 FROM aid_ai_model x WHERE x.provider_id=p.id
+    AND x.model_code='doubao-seedance-2.5-text' AND x.del_flag='0');
+
+-- TokenDance uses the same stable codes as its catalog importer. All seeds remain disabled;
+-- online catalog pricing and administrator review remain authoritative for activation.
+INSERT INTO aid_ai_model
+  (provider_id,model_code,real_model_code,model_name,model_type,generate_mode,
+   cost_credits,billing_multiplier,api_suffix,protocol,priority,status,del_flag,
+   create_time,create_by,remark,billing_mode,billing_rule_json,billing_version,
+   supports_text_input,supports_system_prompt,supports_image_input,supports_multi_image_input,
+   max_output_count,default_output_count,supports_aspect_ratio,supports_size_preset,
+   supports_duration,supports_first_frame,supports_last_frame,default_size_code,
+   default_aspect_ratio,default_duration_seconds,capability_json,capability_inited,is_free)
+SELECT p.id,CONCAT('td_',p.id,'_',c.real_model_code),c.real_model_code,c.model_name,
+       'video','text_to_video',0,1,'/gateway/ark/v3/generations/tasks',
+       'tokendance:seedance:generations',0,'1','0',NOW(),'system',
+       'TokenDance public catalog Seedance model; import live pricing and review before enabling',
+       'SKU',NULL,1,1,0,1,1,1,1,1,1,1,1,1,'720P','16:9',5,
+       JSON_SET(JSON_EXTRACT(IF(c.real_model_code='seedance-2.5',
+           @seedance25_tokendance_capability,
+           IF(c.real_model_code='seedance-2.0',@seedance20_full_capability,
+              @seedance20_small_capability)),'$'),
+         '$.catalogModelId',c.real_model_code,
+         '$.catalogProtocol','seedance:generations',
+         '$.catalogSource',CONCAT('https://tokendance.space/portal/api/models/',c.real_model_code),
+         '$.verificationStatus','VERIFIED_OFFICIAL'),
+       1,0
+FROM aid_ai_provider p
+CROSS JOIN (
+  SELECT 'seedance-2.0' real_model_code,'ByteDance Seedance 2.0' model_name
+  UNION ALL SELECT 'seedance-2.0-fast','ByteDance Seedance 2.0 Fast'
+  UNION ALL SELECT 'seedance-2.0-mini','ByteDance Seedance 2.0 Mini'
+  UNION ALL SELECT 'seedance-2.5','ByteDance Seedance 2.5'
+) c
+WHERE p.provider_code='tokendance' AND p.del_flag='0'
+  AND NOT EXISTS (SELECT 1 FROM aid_ai_model x
+                  WHERE x.provider_id=p.id AND x.real_model_code=c.real_model_code
+                    AND x.del_flag='0');
+
+-- Refresh TokenDance's provider-specific limits without changing catalog billing or enablement.
+UPDATE aid_ai_model m
+JOIN aid_ai_provider p ON p.id=m.provider_id AND p.provider_code='tokendance'
+SET m.config_version=COALESCE(m.config_version,0)+1,
+    m.capability_json=JSON_SET(
+      JSON_EXTRACT(IF(m.real_model_code='seedance-2.5',@seedance25_tokendance_capability,
+        IF(m.real_model_code='seedance-2.0',@seedance20_full_capability,
+           @seedance20_small_capability)),'$'),
+      '$.catalogModelId',m.real_model_code,
+      '$.catalogProtocol','seedance:generations',
+      '$.catalogSource',CONCAT('https://tokendance.space/portal/api/models/',m.real_model_code),
+      '$.verificationStatus','VERIFIED_OFFICIAL'),
+    m.protocol='tokendance:seedance:generations',
+    m.api_suffix='/gateway/ark/v3/generations/tasks',m.generate_mode='text_to_video',
+    m.supports_text_input=1,m.supports_system_prompt=0,m.supports_image_input=1,
+    m.supports_multi_image_input=1,m.supports_aspect_ratio=1,m.supports_size_preset=1,
+    m.supports_duration=1,m.supports_first_frame=1,m.supports_last_frame=1,
+    m.default_size_code='720P',m.default_aspect_ratio='16:9',m.default_duration_seconds=5,
+    m.capability_inited=1,m.update_time=NOW(),m.update_by='system'
+WHERE m.real_model_code IN ('seedance-2.0','seedance-2.0-fast','seedance-2.0-mini','seedance-2.5')
+  AND m.del_flag='0'
+  AND (m.protocol<>'tokendance:seedance:generations'
+    OR COALESCE(JSON_UNQUOTE(JSON_EXTRACT(m.capability_json,'$.verificationStatus')),'')<>'VERIFIED_OFFICIAL'
+    OR NOT (JSON_EXTRACT(m.capability_json,'$.sizeOptions') <=>
+      JSON_EXTRACT(IF(m.real_model_code='seedance-2.5',@seedance25_tokendance_capability,
+        IF(m.real_model_code='seedance-2.0',@seedance20_full_capability,
+           @seedance20_small_capability)),'$.sizeOptions')));
+
+DROP TEMPORARY TABLE IF EXISTS tmp_seedance_scene_202609;
+CREATE TEMPORARY TABLE tmp_seedance_scene_202609 (
+  capability_code VARCHAR(96) NOT NULL,
+  generate_mode VARCHAR(32) NOT NULL,
+  video_scenario VARCHAR(32) NOT NULL,
+  scene_key VARCHAR(32) NOT NULL,
+  label VARCHAR(64) NOT NULL,
+  sort_order INT NOT NULL,
+  PRIMARY KEY (capability_code)
+);
+INSERT INTO tmp_seedance_scene_202609 VALUES
+  ('text_to_video','text_to_video','text','textToVideo','文生视频',0),
+  ('image_to_video','image_to_video','first_frame','imageToVideo','首帧图生视频',10),
+  ('start_end_to_video','start_end_to_video','first_last_frame','startEndToVideo','首尾帧视频',20),
+  ('reference_to_video','reference_to_video','reference','referenceToVideo','多模态参考视频',30),
+  ('video_edit','video_to_video','edit','videoToVideo','视频编辑',40),
+  ('video_extend','video_to_video','extend','videoToVideo','视频延长',50);
+
+DROP TEMPORARY TABLE IF EXISTS tmp_seedance_route_202609;
+CREATE TEMPORARY TABLE tmp_seedance_route_202609 (
+  model_id BIGINT NOT NULL,
+  provider_code VARCHAR(64) NOT NULL,
+  model_code VARCHAR(100) NOT NULL,
+  real_model_code VARCHAR(255) NOT NULL,
+  capability_code VARCHAR(96) NOT NULL,
+  generate_mode VARCHAR(32) NOT NULL,
+  video_scenario VARCHAR(32) NOT NULL,
+  label VARCHAR(64) NOT NULL,
+  sort_order INT NOT NULL,
+  protocol VARCHAR(96) NOT NULL,
+  api_suffix VARCHAR(500) NOT NULL,
+  task_query_suffix VARCHAR(500) NULL,
+  source_url VARCHAR(512) NOT NULL,
+  route_capability MEDIUMTEXT NOT NULL,
+  presentation_json TEXT NOT NULL,
+  PRIMARY KEY (model_id,capability_code)
+);
+
+INSERT INTO tmp_seedance_route_202609
+SELECT seeded.model_id,seeded.provider_code,seeded.model_code,seeded.real_model_code,
+       seeded.capability_code,seeded.generate_mode,seeded.video_scenario,seeded.label,
+       seeded.sort_order,seeded.protocol,seeded.api_suffix,seeded.task_query_suffix,
+       seeded.source_url,
+       JSON_SET(JSON_EXTRACT(seeded.base_capability,'$'),
+         '$.videoScenario',seeded.video_scenario,
+         '$.allowedScenes',JSON_ARRAY(seeded.scene_key),
+         '$.sceneRules',JSON_OBJECT(seeded.scene_key,
+           CASE seeded.video_scenario
+             WHEN 'text' THEN JSON_OBJECT('allowedInputs',JSON_ARRAY('text'))
+             WHEN 'first_frame' THEN JSON_OBJECT('requiredInputs',JSON_ARRAY('firstFrame'),
+               'allowedInputs',JSON_ARRAY('text','firstFrame'),
+               'aspectRatioOptions',JSON_ARRAY('adaptive'),'defaultAspectRatio','adaptive')
+             WHEN 'first_last_frame' THEN JSON_OBJECT(
+               'requiredInputs',JSON_ARRAY('firstFrame','lastFrame'),
+               'allowedInputs',JSON_ARRAY('text','firstFrame','lastFrame'),
+               'aspectRatioOptions',JSON_ARRAY('adaptive'),'defaultAspectRatio','adaptive')
+             WHEN 'reference' THEN JSON_OBJECT('requiredAnyOf',
+               IF(seeded.is_seedance25=1,JSON_ARRAY('image','video','audio'),JSON_ARRAY('image','video')),
+               'allowedInputs',JSON_ARRAY('text','image','video','audio'))
+             ELSE JSON_OBJECT('requiredInputs',JSON_ARRAY('video'),
+               'allowedInputs',JSON_ARRAY('text','image','video','audio'))
+           END),
+         '$.allowedInputs',CASE seeded.video_scenario
+           WHEN 'text' THEN JSON_ARRAY('text')
+           WHEN 'first_frame' THEN JSON_ARRAY('text','firstFrame')
+           WHEN 'first_last_frame' THEN JSON_ARRAY('text','firstFrame','lastFrame')
+           ELSE JSON_ARRAY('text','image','video','audio') END,
+         '$.requiredInputs',CASE seeded.video_scenario
+           WHEN 'first_frame' THEN JSON_ARRAY('firstFrame')
+           WHEN 'first_last_frame' THEN JSON_ARRAY('firstFrame','lastFrame')
+           WHEN 'edit' THEN JSON_ARRAY('video')
+           WHEN 'extend' THEN JSON_ARRAY('video')
+           ELSE JSON_ARRAY() END,
+         '$.requiredAnyOf',CASE WHEN seeded.video_scenario='reference'
+           THEN IF(seeded.is_seedance25=1,JSON_ARRAY('image','video','audio'),JSON_ARRAY('image','video'))
+           ELSE JSON_ARRAY() END,
+         '$.inputImageRole',CASE
+           WHEN seeded.video_scenario IN ('first_frame','first_last_frame') THEN 'first_frame'
+           WHEN seeded.video_scenario IN ('reference','edit','extend') THEN 'reference_image'
+           ELSE '' END,
+         '$.maxReferenceImages',CASE seeded.video_scenario
+           WHEN 'text' THEN 0 WHEN 'first_frame' THEN 1 WHEN 'first_last_frame' THEN 2
+           ELSE JSON_EXTRACT(seeded.base_capability,'$.maxReferenceImages') END,
+         '$.maxReferenceVideos',CASE
+           WHEN seeded.video_scenario IN ('text','first_frame','first_last_frame') THEN 0
+           ELSE JSON_EXTRACT(seeded.base_capability,'$.maxReferenceVideos') END,
+         '$.maxReferenceAudios',CASE
+           WHEN seeded.video_scenario IN ('text','first_frame','first_last_frame') THEN 0
+           ELSE JSON_EXTRACT(seeded.base_capability,'$.maxReferenceAudios') END,
+         '$.maxReferenceMaterials',CASE seeded.video_scenario
+           WHEN 'text' THEN 0 WHEN 'first_frame' THEN 1 WHEN 'first_last_frame' THEN 2
+           ELSE JSON_EXTRACT(seeded.base_capability,'$.maxReferenceMaterials') END,
+         '$.supportsVideoInput',IF(seeded.video_scenario IN ('reference','edit','extend'),TRUE,FALSE),
+         '$.supportsReferenceAudio',IF(seeded.video_scenario IN ('reference','edit','extend'),TRUE,FALSE),
+         '$.supportsFirstFrame',IF(seeded.video_scenario IN ('first_frame','first_last_frame'),TRUE,FALSE),
+         '$.supportsLastFrame',IF(seeded.video_scenario='first_last_frame',TRUE,FALSE),
+         '$.supportsImageInput',IF(seeded.video_scenario<>'text',TRUE,FALSE),
+         '$.supportsMultiImageInput',IF(seeded.video_scenario IN
+           ('first_last_frame','reference','edit','extend'),TRUE,FALSE),
+         '$.aspectRatioOptions',CASE
+           WHEN seeded.video_scenario IN ('first_frame','first_last_frame','edit','extend')
+             THEN JSON_ARRAY('adaptive')
+           ELSE JSON_EXTRACT(seeded.base_capability,'$.aspectRatioOptions') END,
+         '$.defaultAspectRatio',IF(seeded.video_scenario IN
+           ('first_frame','first_last_frame','edit','extend'),'adaptive',
+           JSON_UNQUOTE(JSON_EXTRACT(seeded.base_capability,'$.defaultAspectRatio'))),
+         '$.durationOptions',IF(seeded.video_scenario='edit',JSON_ARRAY(-1),
+           JSON_EXTRACT(seeded.base_capability,'$.durationOptions')),
+         '$.defaultDurationSeconds',IF(seeded.video_scenario='edit',-1,5),
+         '$.referenceVideoMinDurationSeconds',IF(seeded.video_scenario='edit',4,
+           JSON_EXTRACT(seeded.base_capability,'$.referenceVideoMinDurationSeconds'))
+       ),
+       JSON_OBJECT(
+         'supportsTextInput',TRUE,'supportsSystemPrompt',FALSE,
+         'supportsImageInput',IF(seeded.video_scenario<>'text',TRUE,FALSE),
+         'supportsMultiImageInput',IF(seeded.video_scenario IN
+           ('first_last_frame','reference','edit','extend'),TRUE,FALSE),
+         'supportsFirstFrame',IF(seeded.video_scenario IN
+           ('first_frame','first_last_frame'),TRUE,FALSE),
+         'supportsLastFrame',IF(seeded.video_scenario='first_last_frame',TRUE,FALSE),
+         'supportsAspectRatio',TRUE,'supportsSizePreset',TRUE,'supportsDuration',TRUE,
+         'maxOutputCount',1,'defaultOutputCount',1,'defaultSizeCode','720P',
+         'defaultAspectRatio',IF(seeded.video_scenario IN
+           ('first_frame','first_last_frame','edit','extend'),'adaptive','16:9'),
+         'defaultDurationSeconds',IF(seeded.video_scenario='edit',-1,5)
+       )
+FROM (
+  SELECT m.id model_id,p.provider_code,m.model_code,m.real_model_code,
+         s.capability_code,s.generate_mode,s.video_scenario,s.scene_key,s.label,s.sort_order,
+         IF(p.provider_code='tokendance','tokendance:seedance:generations','seedance-video') protocol,
+         IF(p.provider_code='tokendance','/gateway/ark/v3/generations/tasks',
+            '/api/v3/contents/generations/tasks') api_suffix,
+         IF(p.provider_code='tokendance','/gateway/ark/v3/generations/tasks/%s',NULL) task_query_suffix,
+         IF(p.provider_code='tokendance','https://tokendance.space/docs/protocol-seedance-generations.md',
+            IF(m.real_model_code='doubao-seedance-2-5-260628',
+              'https://docs.volcengine.com/docs/82379/2607688?lang=zh',
+              'https://docs.volcengine.com/docs/82379/2291680?lang=zh')) source_url,
+         IF(m.real_model_code IN ('seedance-2.5','doubao-seedance-2-5-260628'),1,0) is_seedance25,
+         CASE
+           WHEN p.provider_code='tokendance' AND m.real_model_code='seedance-2.5'
+             THEN @seedance25_tokendance_capability
+           WHEN p.provider_code='tokendance' AND m.real_model_code='seedance-2.0'
+             THEN @seedance20_full_capability
+           WHEN p.provider_code='tokendance' THEN @seedance20_small_capability
+           WHEN m.real_model_code='doubao-seedance-2-5-260628' THEN @seedance25_fire_capability
+           WHEN m.model_code='doubao-seedance-2.0' THEN @seedance20_full_capability
+           ELSE @seedance20_small_capability
+         END base_capability
+  FROM aid_ai_model m
+  JOIN aid_ai_provider p ON p.id=m.provider_id
+  JOIN tmp_seedance_scene_202609 s
+    ON p.provider_code='tokendance'
+    OR m.model_code IN ('doubao-seedance-2.0','doubao-seedance-2.0-fast','doubao-seedance-2.0-mini','doubao-seedance-2.5')
+    OR (m.model_code='doubao-seedance-2.5-text' AND s.video_scenario='text')
+    OR (m.model_code='doubao-seedance-2.5-first-frame' AND s.video_scenario='first_frame')
+    OR (m.model_code='doubao-seedance-2.5-first-last-frame' AND s.video_scenario='first_last_frame')
+    OR (m.model_code='doubao-seedance-2.5-reference' AND s.video_scenario='reference')
+    OR (m.model_code='doubao-seedance-2.5-edit' AND s.video_scenario='edit')
+    OR (m.model_code='doubao-seedance-2.5-extend' AND s.video_scenario='extend')
+  WHERE m.del_flag='0' AND p.del_flag='0'
+    AND (p.provider_code='volcengine' AND m.model_code IN
+      ('doubao-seedance-2.0','doubao-seedance-2.0-fast','doubao-seedance-2.0-mini',
+       'doubao-seedance-2.5','doubao-seedance-2.5-text','doubao-seedance-2.5-first-frame',
+       'doubao-seedance-2.5-first-last-frame','doubao-seedance-2.5-reference',
+       'doubao-seedance-2.5-edit','doubao-seedance-2.5-extend')
+      OR p.provider_code='tokendance' AND m.real_model_code IN
+       ('seedance-2.0','seedance-2.0-fast','seedance-2.0-mini','seedance-2.5'))
+) seeded;
+
+-- Legacy scene-specific FireMountain 2.5 rows must remain safe even before a capability is selected.
+UPDATE aid_ai_model m
+JOIN tmp_seedance_route_202609 r ON r.model_id=m.id
+SET m.config_version=COALESCE(m.config_version,0)+IF(m.capability_json <=> r.route_capability,0,1),
+    m.capability_json=r.route_capability,m.protocol=r.protocol,m.api_suffix=r.api_suffix,
+    m.capability_inited=1,m.update_time=NOW(),m.update_by='system'
+WHERE r.provider_code='volcengine' AND r.real_model_code='doubao-seedance-2-5-260628'
+  AND r.model_code<>'doubao-seedance-2.5';
+
+INSERT INTO aid_ai_model_capability
+  (model_id,capability_code,generate_mode,definition_json,sort_order,
+   create_time,create_by,update_time,update_by,remark)
+SELECT r.model_id,r.capability_code,r.generate_mode,
+       JSON_OBJECT(
+         'code',r.capability_code,
+         'defaultCapability',IF(r.provider_code='volcengine' AND r.model_code IN
+           ('doubao-seedance-2.0','doubao-seedance-2.0-fast','doubao-seedance-2.0-mini'),
+           r.capability_code='image_to_video',
+           r.capability_code='text_to_video'),
+         'enabled',TRUE,'evidenceStatus','VERIFIED_OFFICIAL',
+         'generateMode',r.generate_mode,'label',r.label,
+         'sourceUrls',JSON_ARRAY(r.source_url),
+         'parameters',JSON_ARRAY(
+           JSON_OBJECT('name','prompt','label','提示词','type','string','widget','textarea'),
+           JSON_OBJECT('name','durationSeconds','label','视频时长','type','integer',
+             'choices',JSON_EXTRACT(r.route_capability,'$.durationOptions'),
+             'defaultValue',JSON_EXTRACT(r.route_capability,'$.defaultDurationSeconds'),'unit','秒'),
+           JSON_OBJECT('name','aspectRatio','label','画面比例','type','string',
+             'choices',JSON_EXTRACT(r.route_capability,'$.aspectRatioOptions'),
+             'defaultValue',JSON_UNQUOTE(JSON_EXTRACT(r.route_capability,'$.defaultAspectRatio'))),
+           JSON_OBJECT('name','options','label','生成参数','type','object','properties',JSON_ARRAY(
+             JSON_OBJECT('name','resolution','label','输出规格','type','string',
+               'choices',JSON_EXTRACT(r.route_capability,'$.sizeOptions')),
+             JSON_OBJECT('name','generate_audio','label','生成音频','type','boolean','defaultValue',TRUE),
+             JSON_OBJECT('name','output_format','label','输出格式','type','string',
+               'choices',JSON_EXTRACT(r.route_capability,'$.outputFormatOptions')),
+             JSON_OBJECT('name','return_last_frame','label','返回尾帧','type','boolean'),
+             JSON_OBJECT('name','camera_fixed','label','固定镜头','type','boolean'),
+             JSON_OBJECT('name','seed','label','随机种子','type','integer')
+           ))
+         ),
+         'presentation',JSON_EXTRACT(r.presentation_json,'$'),'rules',JSON_ARRAY()
+       ),
+       r.sort_order,NOW(),'system',NOW(),'system','Seedance official capability contract'
+FROM tmp_seedance_route_202609 r
+ON DUPLICATE KEY UPDATE
+  generate_mode=VALUES(generate_mode),definition_json=VALUES(definition_json),
+  sort_order=VALUES(sort_order),update_time=NOW(),update_by='system',remark=VALUES(remark);
+
+-- Keep a single default protocol per Seedance capability while retaining any alternate route.
+UPDATE aid_ai_model_protocol_binding b
+JOIN tmp_seedance_route_202609 r
+  ON r.model_id=b.model_id AND r.capability_code=b.capability_code
+SET b.definition_json=JSON_SET(
+      IF(JSON_VALID(b.definition_json),b.definition_json,JSON_OBJECT()),
+      '$.defaultBinding',IF(b.protocol=r.protocol,TRUE,FALSE)),
+    b.update_time=NOW(),b.update_by='system';
+
+UPDATE aid_ai_model_protocol_binding b
+JOIN tmp_seedance_route_202609 r
+  ON r.model_id=b.model_id AND r.capability_code=b.capability_code AND r.protocol=b.protocol
+SET b.definition_json=JSON_SET(
+      IF(JSON_VALID(b.definition_json),b.definition_json,JSON_OBJECT()),
+      '$.code',b.binding_code,'$.protocol',r.protocol,
+      '$.upstreamModel',r.real_model_code,'$.apiSuffix',r.api_suffix,
+      '$.taskQuerySuffix',r.task_query_suffix,'$.defaultBinding',TRUE,'$.enabled',TRUE,
+      '$.capability',JSON_EXTRACT(r.route_capability,'$'),
+      '$.presentation',JSON_EXTRACT(r.presentation_json,'$')),
+    b.sort_order=0,b.update_time=NOW(),b.update_by='system',
+    b.remark='Seedance official protocol binding';
+
+INSERT INTO aid_ai_model_protocol_binding
+  (model_id,capability_code,binding_code,protocol,definition_json,sort_order,
+   create_time,create_by,update_time,update_by,remark)
+SELECT r.model_id,r.capability_code,
+       IF(r.provider_code='tokendance','tokendance_seedance',CONCAT('seedance_official_',r.model_id)),
+       r.protocol,
+       JSON_OBJECT(
+         'code',IF(r.provider_code='tokendance','tokendance_seedance',
+                   CONCAT('seedance_official_',r.model_id)),
+         'protocol',r.protocol,'upstreamModel',r.real_model_code,
+         'apiSuffix',r.api_suffix,'taskQuerySuffix',r.task_query_suffix,
+         'defaultBinding',TRUE,'enabled',TRUE,'fixedParameters',JSON_OBJECT(),
+         'parameterMapping',JSON_OBJECT(),
+         'capability',JSON_EXTRACT(r.route_capability,'$'),
+         'presentation',JSON_EXTRACT(r.presentation_json,'$')),
+       0,NOW(),'system',NOW(),'system','Seedance official protocol binding'
+FROM tmp_seedance_route_202609 r
+WHERE NOT EXISTS (
+  SELECT 1 FROM aid_ai_model_protocol_binding b
+  WHERE b.model_id=r.model_id AND b.capability_code=r.capability_code
+    AND b.protocol=r.protocol
+);
+
+DROP TEMPORARY TABLE IF EXISTS tmp_seedance_route_202609;
+DROP TEMPORARY TABLE IF EXISTS tmp_seedance_scene_202609;
+SET @seedance20_full_capability := NULL;
+SET @seedance20_small_capability := NULL;
+SET @seedance25_fire_capability := NULL;
+SET @seedance25_tokendance_capability := NULL;
+
+-- Tencent Cloud CI asynchronous portrait segmentation and voice separation.
+-- Credentials come from image_object_detection (COS_STORAGE or DEDICATED); no secret is seeded here.
+INSERT INTO aid_ai_provider
+  (provider_name, provider_code, base_url, api_key, auth_header, auth_prefix,
+   api_key_apply_url, official_doc_url, official_price_url, task_query_suffix,
+   status, del_flag, create_time, create_by, remark, supports_callback,
+   schedule_strategy_json, provider_category)
+SELECT '腾讯云数据万象', 'tencent_ci_media', 'https://ci.tencentcloudapi.com', '',
+       'Authorization', '', 'https://console.cloud.tencent.com/cos',
+       'https://cloud.tencent.com/document/product/460/83973',
+       'https://cloud.tencent.com/document/product/436/58964', '/jobs/%s',
+       '1', '0', NOW(), 'system',
+       'COS SDK derives the bucket-region CI endpoint; configure COS credentials, services and billing before enabling',
+       0,
+       '{"dispatchMode":"POLL_ONLY","supportsCallback":false,"firstPollDelaySeconds":5,"baseIntervalSeconds":10,"maxIntervalSeconds":120,"backoffFactor":1.5,"maxRetryCount":360,"maxLifeSeconds":21600,"progressTimeoutSeconds":1800,"maxConcurrency":5}',
+       'OFFICIAL'
+FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM aid_ai_provider WHERE provider_code='tencent_ci_media');
+
+UPDATE aid_ai_provider
+SET official_price_url=COALESCE(NULLIF(official_price_url,''),
+      'https://cloud.tencent.com/document/product/436/58964')
+WHERE provider_code='tencent_ci_media';
+
+SET @tencent_ci_video_formats := JSON_ARRAY(
+  '3gp','asf','avi','dv','flv','f4v','m3u8','m4v','mkv','mov','mp4','mpg','mpeg',
+  'mts','ogg','rm','rmvb','swf','ts','vob','webm','wmv');
+SET @tencent_ci_audio_formats := JSON_ARRAY('mp3','aac','flac','amr','m4a','wav');
+SET @tencent_ci_image_formats := JSON_ARRAY('jpg','jpeg','png','webp','bmp');
+SET @tencent_ci_segment_billing_rule := JSON_OBJECT(
+  'mode','SKU','meterType','PER_SECOND','chargeType','VIDEO','preHold',TRUE,
+  'matchStrategy','FIRST_HIT',
+  'params',JSON_ARRAY(JSON_OBJECT('code','duration','name','可信输入时长代理',
+    'type','NUMBER','unit','秒','required',TRUE)),
+  'skus',JSON_ARRAY(JSON_OBJECT(
+    'skuCode','TENCENT_CI_SEGMENT_PER_SECOND','skuName','视频人像分割按秒',
+    'enabled',TRUE,'priority',1,'match',JSON_OBJECT(),'pricePerSecond',0.02,
+    'remark','官方 1.2 元/分钟，按输出视频时长计费；当前按可信输入时长预冻结')),
+  'settleRule',JSON_OBJECT('settleMode','REFUND_ONLY','usageSource','PROVIDER_USAGE',
+    'allowRefund',TRUE,'allowExtraCharge',FALSE));
+SET @tencent_ci_voice_billing_rule := JSON_OBJECT(
+  'mode','SKU','meterType','PER_SECOND','chargeType','VIDEO','preHold',TRUE,
+  'matchStrategy','FIRST_HIT',
+  'params',JSON_ARRAY(JSON_OBJECT('code','duration','name','可信输入时长代理',
+    'type','NUMBER','unit','秒','required',TRUE)),
+  'skus',JSON_ARRAY(JSON_OBJECT(
+    'skuCode','TENCENT_CI_VOICE_SEPARATION_PER_SECOND','skuName','人声分离按秒',
+    'enabled',TRUE,'priority',1,'match',JSON_OBJECT(),'pricePerSecond',0.001333333333333333,
+    'remark','官方 0.08 元/分钟，按输出文件时长计费；当前按可信输入时长预冻结')),
+  'settleRule',JSON_OBJECT('settleMode','REFUND_ONLY','usageSource','PROVIDER_USAGE',
+    'allowRefund',TRUE,'allowExtraCharge',FALSE));
+SET @tencent_ci_segment_base := JSON_OBJECT(
+  'requiresConfiguredBilling',TRUE,
+  'billingDurationBasis','OUTPUT_SECONDS',
+  'preHoldDurationBasis','TRUSTED_INPUT_SECONDS',
+  'authoritativeOutputDurationAvailable',FALSE,
+  'provider','tencent_ci_media',
+  'providerInputField','Input.Object',
+  'stagesInputToCos',TRUE,
+  'inputModalities',JSON_ARRAY('VIDEO'),
+  'outputModalities',JSON_ARRAY('VIDEO'),
+  'supportsTextInput',FALSE,
+  'supportsSystemPrompt',FALSE,
+  'supportsImageInput',FALSE,
+  'supportsMultiImageInput',FALSE,
+  'supportsVideoInput',TRUE,
+  'supportsReferenceAudio',FALSE,
+  'supportsAudio',FALSE,
+  'supportsAspectRatio',FALSE,
+  'supportsSizePreset',FALSE,
+  'supportsDuration',FALSE,
+  'supportsFirstFrame',FALSE,
+  'supportsLastFrame',FALSE,
+  'minReferenceVideos',1,
+  'maxReferenceVideos',1,
+  'maxReferenceImages',0,
+  'maxReferenceAudios',0,
+  'maxReferenceMaterials',1,
+  'referenceVideoFormats',JSON_EXTRACT(@tencent_ci_video_formats,'$'),
+  'defaultOutputFormat','mp4',
+  'outputFormatOptions',JSON_ARRAY('mp4'),
+  'maxOutputCount',1,
+  'defaultOutputCount',1,
+  'allowedInputs',JSON_ARRAY('video'),
+  'requiredInputs',JSON_ARRAY('video'),
+  'allowedScenes',JSON_ARRAY('videoToVideo'),
+  'strictSceneRules',TRUE,
+  'sceneRules',JSON_OBJECT('videoToVideo',JSON_OBJECT(
+    'requiredInputs',JSON_ARRAY('video'),'allowedInputs',JSON_ARRAY('video'))));
+SET @tencent_ci_voice_base := JSON_OBJECT(
+  'requiresConfiguredBilling',TRUE,
+  'billingDurationBasis','OUTPUT_SECONDS',
+  'preHoldDurationBasis','TRUSTED_INPUT_SECONDS',
+  'authoritativeOutputDurationAvailable',FALSE,
+  'provider','tencent_ci_media',
+  'providerInputField','Input.Object',
+  'stagesInputToCos',TRUE,
+  'inputModalities',JSON_ARRAY('VIDEO','AUDIO'),
+  'outputModalities',JSON_ARRAY('AUDIO'),
+  'supportsTextInput',FALSE,
+  'supportsSystemPrompt',FALSE,
+  'supportsImageInput',FALSE,
+  'supportsMultiImageInput',FALSE,
+  'supportsVideoInput',TRUE,
+  'supportsReferenceAudio',TRUE,
+  'referenceAudioRequiresGeneratedAudio',FALSE,
+  'referenceAudioRequiresVisualInput',FALSE,
+  'supportsAudio',FALSE,
+  'supportsAspectRatio',FALSE,
+  'supportsSizePreset',FALSE,
+  'supportsDuration',FALSE,
+  'supportsFirstFrame',FALSE,
+  'supportsLastFrame',FALSE,
+  'minReferenceVideos',0,
+  'maxReferenceVideos',1,
+  'minReferenceAudios',0,
+  'maxReferenceAudios',1,
+  'maxReferenceImages',0,
+  'maxReferenceMaterials',1,
+  'referenceVideoFormats',JSON_EXTRACT(@tencent_ci_video_formats,'$'),
+  'referenceVideoMaxDurationSeconds',2700,
+  'referenceVideoMaximumExclusiveSeconds',2700,
+  'referenceAudioFormats',JSON_EXTRACT(@tencent_ci_audio_formats,'$'),
+  'referenceAudioMaxDurationSeconds',2700,
+  'referenceAudioMaxTotalDurationSeconds',2700,
+  'referenceAudioMaximumExclusiveSeconds',2700,
+  'outputAudioCodecOptions',JSON_ARRAY('aac','mp3','flac','amr'),
+  'defaultOutputAudioCodec','aac',
+  'outputAudioSampleRateOptions',JSON_ARRAY(8000,11025,22050,32000,44100,48000,96000),
+  'defaultOutputAudioSampleRate',44100,
+  'maxOutputCount',2,
+  'defaultOutputCount',1,
+  'allowedInputs',JSON_ARRAY('video','audio'),
+  'requiredAnyOf',JSON_ARRAY('video','audio'),
+  'allowedScenes',JSON_ARRAY('videoToVideo'),
+  'strictSceneRules',TRUE,
+  'sceneRules',JSON_OBJECT('videoToVideo',JSON_OBJECT(
+    'requiredAnyOf',JSON_ARRAY('video','audio'),
+    'allowedInputs',JSON_ARRAY('video','audio'))));
+
+INSERT INTO aid_ai_model
+  (provider_id, model_code, real_model_code, model_name, model_type, generate_mode,
+   api_suffix, protocol, priority, status, del_flag, create_time, create_by, remark,
+   billing_mode, billing_rule_json, billing_version, supports_text_input,
+   supports_system_prompt, supports_image_input, supports_multi_image_input,
+   max_output_count, default_output_count, supports_aspect_ratio,
+   supports_size_preset, supports_duration, supports_first_frame, supports_last_frame,
+   capability_json, capability_inited, official_price_url)
+SELECT provider.id, catalog.model_code, catalog.real_model_code, catalog.model_name,
+       'video', 'video_to_video', '/jobs', 'tencent-ci-async-media', catalog.priority,
+       '1', '0', NOW(), 'system', catalog.remark, 'SKU', catalog.billing_rule_json, 1,
+       0, 0, catalog.supports_image_input, 0, catalog.max_output_count, 1,
+       0, 0, 0, 0, 0, catalog.capability_json, 1, catalog.official_price_url
+FROM (
+  SELECT 'tencent-ci-video-portrait-segmentation' model_code,
+         'SegmentVideoBody' real_model_code,
+         '腾讯云视频人像分割' model_name, 58 priority, 1 supports_image_input,
+         1 max_output_count,
+         'Mask, Foreground and Combination; 1.2 CNY/min output duration; disabled by default' remark,
+         @tencent_ci_segment_base capability_json,
+         @tencent_ci_segment_billing_rule billing_rule_json,
+         'https://cloud.tencent.com/document/product/436/58964' official_price_url
+  UNION ALL
+  SELECT 'tencent-ci-voice-separation', 'VoiceSeparate', '腾讯云人声与背景声分离',
+         57, 0, 2,
+         'Vocal, background or both; 0.08 CNY/min output duration; source is below 45 minutes; disabled by default',
+         @tencent_ci_voice_base, @tencent_ci_voice_billing_rule,
+         'https://cloud.tencent.com/document/product/436/84601'
+) catalog
+JOIN aid_ai_provider provider ON provider.provider_code='tencent_ci_media'
+WHERE NOT EXISTS (SELECT 1 FROM aid_ai_model model WHERE model.model_code=catalog.model_code);
+
+UPDATE aid_ai_model model
+JOIN (
+  SELECT 'tencent-ci-video-portrait-segmentation' model_code,
+         @tencent_ci_segment_billing_rule billing_rule_json,
+         'https://cloud.tencent.com/document/product/436/58964' official_price_url
+  UNION ALL
+  SELECT 'tencent-ci-voice-separation', @tencent_ci_voice_billing_rule,
+         'https://cloud.tencent.com/document/product/436/84601'
+) catalog ON catalog.model_code=model.model_code
+SET model.billing_mode=IF(NULLIF(TRIM(model.billing_rule_json),'') IS NULL,'SKU',model.billing_mode),
+    model.billing_version=IF(NULLIF(TRIM(model.billing_rule_json),'') IS NULL,1,model.billing_version),
+    model.billing_rule_json=COALESCE(NULLIF(TRIM(model.billing_rule_json),''),catalog.billing_rule_json),
+    model.official_price_url=COALESCE(NULLIF(model.official_price_url,''),catalog.official_price_url);
+
+DROP TEMPORARY TABLE IF EXISTS tmp_tencent_ci_route_202609;
+CREATE TEMPORARY TABLE tmp_tencent_ci_route_202609 (
+  model_code VARCHAR(100) NOT NULL,
+  capability_code VARCHAR(96) NOT NULL,
+  capability_label VARCHAR(100) NOT NULL,
+  upstream_mode VARCHAR(32) NOT NULL,
+  default_capability TINYINT NOT NULL,
+  sort_order INT NOT NULL,
+  source_url VARCHAR(512) NOT NULL,
+  capability_json LONGTEXT NOT NULL,
+  parameters_json LONGTEXT NULL,
+  rules_json LONGTEXT NULL,
+  presentation_json LONGTEXT NULL
+);
+
+INSERT INTO tmp_tencent_ci_route_202609 VALUES
+('tencent-ci-video-portrait-segmentation','portrait_mask','人像蒙版','Mask',1,0,
+ 'https://cloud.tencent.com/document/product/460/83973',
+ JSON_SET(JSON_EXTRACT(@tencent_ci_segment_base,'$'),'$.segmentMode','Mask'),
+ JSON_ARRAY(
+   JSON_OBJECT('name','referenceVideoRecordIds','label','源视频','type','array',
+     'required',TRUE,'minimum',1,'maximum',1,'materialRole','reference_video',
+     'formats',JSON_EXTRACT(@tencent_ci_video_formats,'$'),
+     'items',JSON_OBJECT('name','videoId','type','integer')),
+   JSON_OBJECT('name','options','label','处理参数','type','object','properties',JSON_ARRAY(
+     JSON_OBJECT('name','segmentType','label','分割类型','type','string',
+       'choices',JSON_ARRAY('HumanSeg','GreenScreenSeg','SolidColorSeg'),'defaultValue','HumanSeg'),
+     JSON_OBJECT('name','binaryThreshold','label','二值化阈值','type','integer','minimum',0,'maximum',255,'defaultValue',0),
+     JSON_OBJECT('name','removeRed','label','去除颜色红通道','type','integer','minimum',0,'maximum',255),
+     JSON_OBJECT('name','removeGreen','label','去除颜色绿通道','type','integer','minimum',0,'maximum',255),
+     JSON_OBJECT('name','removeBlue','label','去除颜色蓝通道','type','integer','minimum',0,'maximum',255),
+     JSON_OBJECT('name','jobLevel','label','任务优先级','type','integer',
+       'choices',JSON_ARRAY(0,1,2),'defaultValue',0),
+     JSON_OBJECT('name','userData','label','透传信息','type','string','maximum',1024)))),
+ JSON_ARRAY(JSON_OBJECT('match','all','conditions',JSON_ARRAY(
+   JSON_OBJECT('field','options.segmentType','operator','neq','value','SolidColorSeg')),
+   'actions',JSON_ARRAY(
+     JSON_OBJECT('field','options.removeRed','operator','forbidden'),
+     JSON_OBJECT('field','options.removeGreen','operator','forbidden'),
+     JSON_OBJECT('field','options.removeBlue','operator','forbidden')))),
+ JSON_OBJECT('supportsTextInput',FALSE,'supportsImageInput',FALSE,'supportsVideoInput',TRUE,
+   'supportsAspectRatio',FALSE,'supportsDuration',FALSE,'maxOutputCount',1,'defaultOutputCount',1)),
+('tencent-ci-video-portrait-segmentation','portrait_foreground','人像前景','Foreground',0,1,
+ 'https://cloud.tencent.com/document/product/460/83973',
+ JSON_SET(JSON_EXTRACT(@tencent_ci_segment_base,'$'),'$.segmentMode','Foreground'),
+ JSON_ARRAY(
+   JSON_OBJECT('name','referenceVideoRecordIds','label','源视频','type','array',
+     'required',TRUE,'minimum',1,'maximum',1,'materialRole','reference_video',
+     'formats',JSON_EXTRACT(@tencent_ci_video_formats,'$'),
+     'items',JSON_OBJECT('name','videoId','type','integer')),
+   JSON_OBJECT('name','options','label','处理参数','type','object','properties',JSON_ARRAY(
+     JSON_OBJECT('name','segmentType','label','分割类型','type','string',
+       'choices',JSON_ARRAY('HumanSeg','GreenScreenSeg','SolidColorSeg'),'defaultValue','HumanSeg'),
+     JSON_OBJECT('name','backgroundRed','label','背景红通道','type','integer','minimum',0,'maximum',255,'defaultValue',0),
+     JSON_OBJECT('name','backgroundGreen','label','背景绿通道','type','integer','minimum',0,'maximum',255,'defaultValue',0),
+     JSON_OBJECT('name','backgroundBlue','label','背景蓝通道','type','integer','minimum',0,'maximum',255,'defaultValue',0),
+     JSON_OBJECT('name','binaryThreshold','label','二值化阈值','type','integer','minimum',0,'maximum',255,'defaultValue',0),
+     JSON_OBJECT('name','removeRed','label','去除颜色红通道','type','integer','minimum',0,'maximum',255),
+     JSON_OBJECT('name','removeGreen','label','去除颜色绿通道','type','integer','minimum',0,'maximum',255),
+     JSON_OBJECT('name','removeBlue','label','去除颜色蓝通道','type','integer','minimum',0,'maximum',255),
+     JSON_OBJECT('name','jobLevel','label','任务优先级','type','integer',
+       'choices',JSON_ARRAY(0,1,2),'defaultValue',0),
+     JSON_OBJECT('name','userData','label','透传信息','type','string','maximum',1024)))),
+ JSON_ARRAY(JSON_OBJECT('match','all','conditions',JSON_ARRAY(
+   JSON_OBJECT('field','options.segmentType','operator','neq','value','SolidColorSeg')),
+   'actions',JSON_ARRAY(
+     JSON_OBJECT('field','options.removeRed','operator','forbidden'),
+     JSON_OBJECT('field','options.removeGreen','operator','forbidden'),
+     JSON_OBJECT('field','options.removeBlue','operator','forbidden')))),
+ JSON_OBJECT('supportsTextInput',FALSE,'supportsImageInput',FALSE,'supportsVideoInput',TRUE,
+   'supportsAspectRatio',FALSE,'supportsDuration',FALSE,'maxOutputCount',1,'defaultOutputCount',1)),
+('tencent-ci-video-portrait-segmentation','portrait_combination','人像背景合成','Combination',0,2,
+ 'https://cloud.tencent.com/document/product/460/83973',
+ JSON_SET(JSON_EXTRACT(@tencent_ci_segment_base,'$'),
+   '$.segmentMode','Combination','$.inputModalities',JSON_ARRAY('VIDEO','IMAGE'),
+   '$.supportsImageInput',TRUE,'$.maxReferenceImages',1,'$.maxReferenceMaterials',2,
+   '$.referenceImageFormats',JSON_EXTRACT(@tencent_ci_image_formats,'$'),
+   '$.inputImageRole','reference_image','$.allowedInputs',JSON_ARRAY('video','image'),
+   '$.requiredInputs',JSON_ARRAY('video','image'),
+   '$.sceneRules.videoToVideo',JSON_OBJECT(
+     'requiredInputs',JSON_ARRAY('video','image'),'allowedInputs',JSON_ARRAY('video','image'))),
+ JSON_ARRAY(
+   JSON_OBJECT('name','referenceVideoRecordIds','label','源视频','type','array',
+     'required',TRUE,'minimum',1,'maximum',1,'materialRole','reference_video',
+     'formats',JSON_EXTRACT(@tencent_ci_video_formats,'$'),
+     'items',JSON_OBJECT('name','videoId','type','integer')),
+   JSON_OBJECT('name','imageUrl','label','背景图片','type','string','required',TRUE,
+     'materialRole','reference_image','formats',JSON_EXTRACT(@tencent_ci_image_formats,'$')),
+   JSON_OBJECT('name','options','label','处理参数','type','object','properties',JSON_ARRAY(
+     JSON_OBJECT('name','segmentType','label','分割类型','type','string',
+       'choices',JSON_ARRAY('HumanSeg','GreenScreenSeg','SolidColorSeg'),'defaultValue','HumanSeg'),
+     JSON_OBJECT('name','binaryThreshold','label','二值化阈值','type','integer','minimum',0,'maximum',255,'defaultValue',0),
+     JSON_OBJECT('name','removeRed','label','去除颜色红通道','type','integer','minimum',0,'maximum',255),
+     JSON_OBJECT('name','removeGreen','label','去除颜色绿通道','type','integer','minimum',0,'maximum',255),
+     JSON_OBJECT('name','removeBlue','label','去除颜色蓝通道','type','integer','minimum',0,'maximum',255),
+     JSON_OBJECT('name','jobLevel','label','任务优先级','type','integer',
+       'choices',JSON_ARRAY(0,1,2),'defaultValue',0),
+     JSON_OBJECT('name','userData','label','透传信息','type','string','maximum',1024)))),
+ JSON_ARRAY(JSON_OBJECT('match','all','conditions',JSON_ARRAY(
+   JSON_OBJECT('field','options.segmentType','operator','neq','value','SolidColorSeg')),
+   'actions',JSON_ARRAY(
+     JSON_OBJECT('field','options.removeRed','operator','forbidden'),
+     JSON_OBJECT('field','options.removeGreen','operator','forbidden'),
+     JSON_OBJECT('field','options.removeBlue','operator','forbidden')))),
+ JSON_OBJECT('supportsTextInput',FALSE,'supportsImageInput',TRUE,'supportsVideoInput',TRUE,
+   'supportsAspectRatio',FALSE,'supportsDuration',FALSE,'maxOutputCount',1,'defaultOutputCount',1)),
+('tencent-ci-voice-separation','voice_only','仅人声','IsAudio',1,0,
+ 'https://cloud.tencent.com/document/product/460/84794',
+ JSON_SET(JSON_EXTRACT(@tencent_ci_voice_base,'$'),
+   '$.audioMode','IsAudio','$.maxOutputCount',1,'$.defaultOutputCount',1),
+ NULL,NULL,NULL),
+('tencent-ci-voice-separation','background_only','仅背景声','IsBackground',0,1,
+ 'https://cloud.tencent.com/document/product/460/84794',
+ JSON_SET(JSON_EXTRACT(@tencent_ci_voice_base,'$'),
+   '$.audioMode','IsBackground','$.maxOutputCount',1,'$.defaultOutputCount',1),
+ NULL,NULL,NULL),
+('tencent-ci-voice-separation','voice_background','人声与背景声','AudioAndBackground',0,2,
+ 'https://cloud.tencent.com/document/product/460/84794',
+ JSON_SET(JSON_EXTRACT(@tencent_ci_voice_base,'$'),
+   '$.audioMode','AudioAndBackground','$.maxOutputCount',2,'$.defaultOutputCount',2),
+ NULL,NULL,NULL);
+
+SET @tencent_ci_voice_parameters := JSON_ARRAY(
+  JSON_OBJECT('name','referenceVideoRecordIds','label','源视频','type','array',
+    'minimum',0,'maximum',1,'materialRole','reference_video',
+    'formats',JSON_EXTRACT(@tencent_ci_video_formats,'$'),'maxDurationSeconds',2700,
+    'items',JSON_OBJECT('name','videoId','type','integer')),
+  JSON_OBJECT('name','referenceAudios','label','源音频','type','array',
+    'minimum',0,'maximum',1,'materialRole','reference_audio',
+    'formats',JSON_EXTRACT(@tencent_ci_audio_formats,'$'),'maxDurationSeconds',2700,
+    'maxTotalDurationSeconds',2700,'items',JSON_OBJECT('name','audio','type','object')),
+  JSON_OBJECT('name','options','label','输出参数','type','object','properties',JSON_ARRAY(
+    JSON_OBJECT('name','audioCodec','label','音频编码','type','string',
+      'choices',JSON_ARRAY('aac','mp3','flac','amr'),'defaultValue','aac'),
+    JSON_OBJECT('name','audioSampleRate','label','采样率','type','integer',
+      'choices',JSON_ARRAY(8000,11025,22050,32000,44100,48000,96000),'defaultValue',44100),
+    JSON_OBJECT('name','audioBitrateKbps','label','码率','type','integer','minimum',8,'maximum',1000),
+    JSON_OBJECT('name','audioChannels','label','声道数','type','integer',
+      'choices',JSON_ARRAY(1,2,4,5,6,8)),
+    JSON_OBJECT('name','jobLevel','label','任务优先级','type','integer',
+      'choices',JSON_ARRAY(0,1,2),'defaultValue',0),
+    JSON_OBJECT('name','userData','label','透传信息','type','string','maximum',1024))));
+SET @tencent_ci_voice_rules := JSON_ARRAY(
+  JSON_OBJECT('match','all','conditions',JSON_ARRAY(
+    JSON_OBJECT('field','options.audioCodec','operator','in','value',JSON_ARRAY('aac','flac'))),
+    'actions',JSON_ARRAY(
+      JSON_OBJECT('field','options.audioSampleRate','operator','choices',
+        'value',JSON_ARRAY(11025,22050,32000,44100,48000,96000)),
+      JSON_OBJECT('field','options.audioChannels','operator','choices',
+        'value',JSON_ARRAY(1,2,4,5,6,8)))),
+  JSON_OBJECT('match','all','conditions',JSON_ARRAY(
+    JSON_OBJECT('field','options.audioCodec','operator','eq','value','mp3')),
+    'actions',JSON_ARRAY(
+      JSON_OBJECT('field','options.audioSampleRate','operator','choices',
+        'value',JSON_ARRAY(11025,22050,32000,44100,48000)),
+      JSON_OBJECT('field','options.audioChannels','operator','choices','value',JSON_ARRAY(1,2)))),
+  JSON_OBJECT('match','all','conditions',JSON_ARRAY(
+    JSON_OBJECT('field','options.audioCodec','operator','eq','value','amr')),
+    'actions',JSON_ARRAY(
+      JSON_OBJECT('field','options.audioSampleRate','operator','fixed','value',8000),
+      JSON_OBJECT('field','options.audioChannels','operator','choices','value',JSON_ARRAY(1)))));
+SET @tencent_ci_voice_presentation := JSON_OBJECT(
+  'supportsTextInput',FALSE,'supportsImageInput',FALSE,'supportsVideoInput',TRUE,
+  'supportsReferenceAudio',TRUE,'supportsAspectRatio',FALSE,'supportsDuration',FALSE);
+
+UPDATE tmp_tencent_ci_route_202609
+SET parameters_json=@tencent_ci_voice_parameters,
+    rules_json=@tencent_ci_voice_rules,
+    presentation_json=JSON_SET(JSON_EXTRACT(@tencent_ci_voice_presentation,'$'),
+      '$.maxOutputCount',IF(capability_code='voice_background',2,1),
+      '$.defaultOutputCount',IF(capability_code='voice_background',2,1))
+WHERE model_code='tencent-ci-voice-separation';
+
+INSERT INTO aid_ai_model_capability
+  (model_id, capability_code, generate_mode, definition_json, sort_order,
+   create_time, create_by, update_time, update_by, remark)
+SELECT model.id, route.capability_code, 'video_to_video',
+       JSON_OBJECT(
+         'code',route.capability_code,
+         'label',route.capability_label,
+         'generateMode','video_to_video',
+         'enabled',TRUE,
+         'defaultCapability',route.default_capability=1,
+         'evidenceStatus','VERIFIED_OFFICIAL',
+         'sourceUrls',JSON_ARRAY(route.source_url),
+         'parameters',JSON_EXTRACT(route.parameters_json,'$'),
+         'rules',JSON_EXTRACT(route.rules_json,'$'),
+         'presentation',JSON_EXTRACT(route.presentation_json,'$')),
+       route.sort_order, NOW(), 'system', NOW(), 'system',
+       'Tencent Cloud CI official asynchronous media capability'
+FROM tmp_tencent_ci_route_202609 route
+JOIN aid_ai_model model ON model.model_code=route.model_code
+WHERE NOT EXISTS (
+  SELECT 1 FROM aid_ai_model_capability capability
+  WHERE capability.model_id=model.id AND capability.capability_code=route.capability_code);
+
+INSERT INTO aid_ai_model_protocol_binding
+  (model_id, capability_code, binding_code, protocol, definition_json, sort_order,
+   create_time, create_by, update_time, update_by, remark)
+SELECT model.id, route.capability_code,
+       CONCAT('tencent_ci_',route.capability_code), 'tencent-ci-async-media',
+       JSON_OBJECT(
+         'code',CONCAT('tencent_ci_',route.capability_code),
+         'protocol','tencent-ci-async-media',
+         'upstreamModel',model.real_model_code,
+         'apiSuffix','/jobs',
+         'taskQuerySuffix','/jobs/%s',
+         'billingMode','SKU',
+         'defaultBinding',TRUE,
+         'enabled',TRUE,
+         'fixedParameters',JSON_OBJECT('Tag',model.real_model_code,'Mode',route.upstream_mode),
+         'parameterMapping',JSON_OBJECT(),
+         'capability',JSON_EXTRACT(route.capability_json,'$'),
+         'presentation',JSON_EXTRACT(route.presentation_json,'$')),
+       route.sort_order, NOW(), 'system', NOW(), 'system',
+       'Tencent Cloud CI SDK job binding'
+FROM tmp_tencent_ci_route_202609 route
+JOIN aid_ai_model model ON model.model_code=route.model_code
+WHERE NOT EXISTS (
+  SELECT 1 FROM aid_ai_model_protocol_binding binding
+  WHERE binding.model_id=model.id AND binding.capability_code=route.capability_code
+    AND binding.binding_code=CONCAT('tencent_ci_',route.capability_code));
+
+-- C-side business pools expose every mode through one model entry and availableCapabilities[].
+INSERT INTO aid_ai_model_func_config
+  (func_name, func_code, model_type, generate_mode, model_ids, status, del_flag,
+   create_time, create_by, remark)
+SELECT pool.func_name, pool.func_code, 'video', 'video_to_video', JSON_ARRAY(model.id),
+       '0', '0', NOW(), 'system', 'Model, Tencent credentials and selling price are administrator-configurable'
+FROM (
+  SELECT '视频人像分割' func_name, 'video_portrait_segmentation' func_code,
+         'tencent-ci-video-portrait-segmentation' model_code
+  UNION ALL
+  SELECT '人声与背景声分离', 'audio_voice_separation', 'tencent-ci-voice-separation'
+) pool
+JOIN aid_ai_model model ON model.model_code=pool.model_code
+WHERE NOT EXISTS (
+  SELECT 1 FROM aid_ai_model_func_config config WHERE config.func_code=pool.func_code);
+
+INSERT INTO aid_ai_business_model_binding
+  (func_code, model_id, capability_code, default_capability, defaults_json,
+   sort_order, create_time, create_by)
+SELECT route.func_code, model.id, route.capability_code, route.default_capability,
+       NULL, route.sort_order, NOW(), 'system'
+FROM (
+  SELECT 'video_portrait_segmentation' func_code,
+         'tencent-ci-video-portrait-segmentation' model_code,
+         'portrait_mask' capability_code, 1 default_capability, 0 sort_order
+  UNION ALL
+  SELECT 'video_portrait_segmentation', 'tencent-ci-video-portrait-segmentation',
+         'portrait_foreground', 0, 1
+  UNION ALL
+  SELECT 'video_portrait_segmentation', 'tencent-ci-video-portrait-segmentation',
+         'portrait_combination', 0, 2
+  UNION ALL
+  SELECT 'audio_voice_separation', 'tencent-ci-voice-separation',
+         'voice_only', 1, 0
+  UNION ALL
+  SELECT 'audio_voice_separation', 'tencent-ci-voice-separation',
+         'background_only', 0, 1
+  UNION ALL
+  SELECT 'audio_voice_separation', 'tencent-ci-voice-separation',
+         'voice_background', 0, 2
+) route
+JOIN aid_ai_model model ON model.model_code=route.model_code
+WHERE NOT EXISTS (
+  SELECT 1 FROM aid_ai_business_model_binding binding
+  WHERE binding.func_code=route.func_code AND binding.model_id=model.id
+    AND binding.capability_code=route.capability_code);
+
+DROP TEMPORARY TABLE IF EXISTS tmp_tencent_ci_route_202609;
+SET @tencent_ci_segment_billing_rule := NULL;
+SET @tencent_ci_voice_billing_rule := NULL;
+SET @tencent_ci_video_formats := NULL;
+SET @tencent_ci_audio_formats := NULL;
+SET @tencent_ci_image_formats := NULL;
+SET @tencent_ci_segment_base := NULL;
+SET @tencent_ci_voice_base := NULL;
+SET @tencent_ci_voice_parameters := NULL;
+SET @tencent_ci_voice_rules := NULL;
+SET @tencent_ci_voice_presentation := NULL;
+
+-- Tencent MPS SmartErase subtitle removal. The existing Tencent image-detection credential
+-- configuration supplies TC3 credentials; no secret or private bucket is seeded here.
+INSERT INTO aid_ai_provider
+  (provider_name, provider_code, base_url, api_key, auth_header, auth_prefix,
+   api_key_apply_url, official_doc_url, official_price_url, task_query_suffix,
+   status, del_flag, create_time, create_by, remark, supports_callback,
+   schedule_strategy_json, provider_category)
+SELECT '腾讯云媒体处理', 'tencent_mps', 'https://mps.tencentcloudapi.com', '',
+       'Authorization', '', 'https://console.cloud.tencent.com/mps',
+       'https://cloud.tencent.com/document/product/862/37578',
+       'https://cloud.tencent.com/document/product/862/36180', '',
+       '1', '0', NOW(), 'system',
+       'Uses configured Tencent credentials and COS output; verify service activation before enabling',
+       0,
+       '{"dispatchMode":"POLL_ONLY","supportsCallback":false,"firstPollDelaySeconds":5,"baseIntervalSeconds":10,"maxIntervalSeconds":120,"backoffFactor":1.5,"maxRetryCount":360,"maxLifeSeconds":21600,"progressTimeoutSeconds":1800,"maxConcurrency":5}',
+       'OFFICIAL'
+FROM DUAL WHERE NOT EXISTS (SELECT 1 FROM aid_ai_provider WHERE provider_code='tencent_mps');
+
+INSERT INTO aid_ai_model
+  (provider_id, model_code, real_model_code, model_name, model_type, generate_mode,
+   protocol, priority, status, del_flag, create_time, create_by, remark,
+   billing_mode, billing_rule_json, billing_version, supports_text_input,
+   supports_system_prompt, supports_image_input, max_output_count, default_output_count,
+   supports_aspect_ratio, supports_size_preset, supports_duration,
+   supports_first_frame, supports_last_frame, capability_json, capability_inited,
+   official_price_url)
+SELECT p.id, 'tencent-mps-subtitle-erase', 'SmartEraseSubtitle', '腾讯云智能去字幕',
+       'video', 'video_to_video', 'tencent-mps:subtitle-erase', 55, '1', '0',
+       NOW(), 'system', 'Automatic and selected-area subtitle removal; disabled until credentials and billing are verified',
+       'SKU',
+       '{"mode":"SKU","meterType":"PER_SECOND","chargeType":"VIDEO","preHold":true,"matchStrategy":"FIRST_HIT","skus":[{"skuCode":"MPS_SUBTITLE_720P","skuName":"高清","enabled":true,"priority":1,"match":{"resolution":"720p"},"pricePerSecond":0.025},{"skuCode":"MPS_SUBTITLE_1080P","skuName":"全高清","enabled":true,"priority":2,"match":{"resolution":"1080p"},"pricePerSecond":0.05},{"skuCode":"MPS_SUBTITLE_2K","skuName":"2K","enabled":true,"priority":3,"match":{"resolution":"2K"},"pricePerSecond":0.1},{"skuCode":"MPS_SUBTITLE_4K","skuName":"4K","enabled":true,"priority":4,"match":{"resolution":"4K"},"pricePerSecond":0.1}]}',
+       1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0,
+       '{"requiresConfiguredBilling":true,"supportsVideoInput":true,"minReferenceVideos":1,"maxReferenceVideos":1,"maxReferenceImages":0,"maxReferenceAudios":0,"referenceVideoMaxDurationSeconds":300,"allowedInputs":["video"],"requiredInputs":["video"],"strictSceneRules":true,"sceneRules":{"videoToVideo":{"requiredInputs":["video"],"allowedInputs":["video"]}},"inputModalities":["VIDEO"],"outputModalities":["VIDEO"],"eraseModeOptions":["AUTO","CUSTOM"],"subtitleModelOptions":["standard","area"]}',
+       1, 'https://cloud.tencent.com/document/product/862/36180'
+FROM aid_ai_provider p WHERE p.provider_code='tencent_mps'
+  AND NOT EXISTS (SELECT 1 FROM aid_ai_model m WHERE m.model_code='tencent-mps-subtitle-erase');
+
+INSERT INTO aid_ai_model_capability
+  (model_id, capability_code, generate_mode, definition_json, sort_order, create_time, create_by)
+SELECT m.id, 'video_subtitle_remove', 'video_to_video',
+       JSON_OBJECT('code','video_subtitle_remove','label','智能去字幕','generateMode','video_to_video',
+         'enabled',TRUE,'defaultCapability',TRUE,'evidenceStatus','OFFICIAL',
+         'sourceUrls',JSON_ARRAY('https://cloud.tencent.com/document/product/862/37578',
+                                 'https://cloud.tencent.com/document/product/862/37615'),
+         'presentation',JSON_OBJECT('supportsVideoInput',TRUE,'supportsTextInput',FALSE),
+         'parameters',JSON_ARRAY(
+           JSON_OBJECT('name','referenceVideoRecordIds','label','源视频','type','array',
+             'items',JSON_OBJECT('name','resourceId','label','视频资源 ID','type','integer'),
+             'required',TRUE,'minimum',1,'maximum',1),
+           JSON_OBJECT('name','eraseMode','label','擦除模式','type','string','choices',JSON_ARRAY('AUTO','CUSTOM')),
+           JSON_OBJECT('name','subtitleModel','label','字幕模型','type','string','choices',JSON_ARRAY('standard','area')),
+           JSON_OBJECT('name','areas','label','框选时间区域','type','array','requiredWhen','eraseMode=CUSTOM',
+             'items',JSON_OBJECT('name','area','label','时间区域','type','object','properties',JSON_ARRAY(
+               JSON_OBJECT('name','beginMs','label','开始毫秒','type','integer'),
+               JSON_OBJECT('name','endMs','label','结束毫秒','type','integer'),
+               JSON_OBJECT('name','boxes','label','画面区域','type','array',
+                 'items',JSON_OBJECT('name','box','label','矩形','type','object','properties',JSON_ARRAY(
+                   JSON_OBJECT('name','x1','label','左边界','type','number'),
+                   JSON_OBJECT('name','y1','label','上边界','type','number'),
+                   JSON_OBJECT('name','x2','label','右边界','type','number'),
+                   JSON_OBJECT('name','y2','label','下边界','type','number'))))))))),
+       0, NOW(), 'system'
+FROM aid_ai_model m WHERE m.model_code='tencent-mps-subtitle-erase'
+  AND NOT EXISTS (SELECT 1 FROM aid_ai_model_capability c
+                  WHERE c.model_id=m.id AND c.capability_code='video_subtitle_remove');
+
+INSERT INTO aid_ai_model_protocol_binding
+  (model_id, capability_code, binding_code, protocol, definition_json,
+   sort_order, create_time, create_by)
+SELECT m.id, 'video_subtitle_remove', 'tencent_mps_subtitle', 'tencent-mps:subtitle-erase',
+       JSON_OBJECT('code','tencent_mps_subtitle','protocol','tencent-mps:subtitle-erase',
+         'upstreamModel','SmartEraseSubtitle','billingMode','SKU',
+         'defaultBinding',TRUE,'enabled',TRUE,
+         'capability',CAST(m.capability_json AS JSON)), 0, NOW(), 'system'
+FROM aid_ai_model m WHERE m.model_code='tencent-mps-subtitle-erase'
+  AND NOT EXISTS (SELECT 1 FROM aid_ai_model_protocol_binding b
+                  WHERE b.model_id=m.id AND b.capability_code='video_subtitle_remove'
+                    AND b.binding_code='tencent_mps_subtitle');
+
+INSERT INTO aid_ai_model_func_config
+  (func_name, func_code, model_type, generate_mode, model_ids, status, del_flag,
+   create_time, create_by, remark)
+SELECT '视频智能去字幕', 'video_subtitle_remove', 'video', 'video_to_video',
+       JSON_ARRAY(m.id), '0', '0', NOW(), 'system', 'Model and selling price are administrator-configurable'
+FROM aid_ai_model m WHERE m.model_code='tencent-mps-subtitle-erase'
+  AND NOT EXISTS (SELECT 1 FROM aid_ai_model_func_config f WHERE f.func_code='video_subtitle_remove');
+
+INSERT INTO aid_ai_business_model_binding
+  (func_code, model_id, capability_code, default_capability, defaults_json,
+   sort_order, create_time, create_by)
+SELECT 'video_subtitle_remove', m.id, 'video_subtitle_remove', 1, NULL,
+       0, NOW(), 'system'
+FROM aid_ai_model m WHERE m.model_code='tencent-mps-subtitle-erase'
+  AND NOT EXISTS (SELECT 1 FROM aid_ai_business_model_binding b
+                  WHERE b.func_code='video_subtitle_remove' AND b.model_id=m.id);
+-- Seedance 2.5 official 1080P tier: video input CNY 46/M tokens, no video CNY 77/M tokens.
+-- Existing administrator-managed prices remain untouched; fresh disabled public scenes get the official rule.
+SET @seedance25_verified_rule := '{"mode":"SKU","meterType":"TOKEN","chargeType":"VIDEO","preHold":true,"matchStrategy":"FIRST_HIT","videoTokenEstimate":{"strategy":"PIXEL_FPS","framesPerSecond":24,"tokenDivisor":1024,"autoDurationMaxSeconds":30,"inputVideoMaxSeconds":30,"fallbackResolution":"1080P","minimumInputSecondsNumerator":2,"minimumInputSecondsDenominator":3,"dimensions":{"480P":{"16:9":[854,480],"9:16":[854,480],"4:3":[752,560],"3:4":[752,560],"1:1":[640,640],"21:9":[992,432],"default":[992,432]},"720P":{"16:9":[1280,720],"9:16":[1280,720],"4:3":[1112,834],"3:4":[1112,834],"1:1":[960,960],"21:9":[1470,630],"default":[1112,834]},"1080P":{"16:9":[1920,1080],"9:16":[1080,1920],"4:3":[1664,1248],"3:4":[1248,1664],"1:1":[1440,1440],"21:9":[2206,946],"default":[2206,946]}}},"skus":[{"skuCode":"SEEDANCE25_480P_INVIDEO","enabled":true,"priority":1,"match":{"resolution":"480P","inputVideoCountMin":1},"price":3.63,"inputPricePerMillion":0,"outputPricePerMillion":42},{"skuCode":"SEEDANCE25_720P_INVIDEO","enabled":true,"priority":2,"match":{"resolution":"720P","inputVideoCountMin":1},"price":8.16,"inputPricePerMillion":0,"outputPricePerMillion":42},{"skuCode":"SEEDANCE25_1080P_INVIDEO","skuName":"Seedance2.5 1080P含输入视频","enabled":true,"priority":3,"match":{"resolution":"1080P","inputVideoCountMin":1},"price":18.63,"inputPricePerMillion":0,"outputPricePerMillion":46,"remark":"官方46元/百万token；价格按实际输出Token结算"},{"skuCode":"SEEDANCE25_480P","enabled":true,"priority":11,"match":{"resolution":"480P"},"price":3.36,"inputPricePerMillion":0,"outputPricePerMillion":70},{"skuCode":"SEEDANCE25_720P","enabled":true,"priority":12,"match":{"resolution":"720P"},"price":7.56,"inputPricePerMillion":0,"outputPricePerMillion":70},{"skuCode":"SEEDANCE25_1080P","skuName":"Seedance2.5 1080P","enabled":true,"priority":13,"match":{"resolution":"1080P"},"price":18.711,"inputPricePerMillion":0,"outputPricePerMillion":77,"remark":"官方77元/百万token；价格按实际输出Token结算"},{"skuCode":"SEEDANCE25_FALLBACK","enabled":true,"priority":999,"match":{},"price":18.711,"inputPricePerMillion":0,"outputPricePerMillion":77,"remark":"未识别参数按官方最高77元/百万token安全预冻结"}],"settleRule":{"settleMode":"REFUND_ONLY","usageSource":"PROVIDER_USAGE","allowRefund":true,"allowExtraCharge":false},"params":[{"code":"resolution","name":"分辨率","type":"ENUM","options":["480P","720P","1080P"],"required":true}]}';
+UPDATE aid_ai_model m JOIN aid_ai_provider p ON p.id=m.provider_id
+SET m.billing_rule_json=@seedance25_verified_rule
+WHERE p.provider_code='volcengine' AND m.real_model_code='doubao-seedance-2-5-260628'
+  AND m.status='1' AND m.create_by='system' AND COALESCE(m.update_by,'system')='system'
+  AND m.billing_rule_json IS NULL;
+UPDATE aid_ai_model m JOIN aid_ai_provider p ON p.id=m.provider_id
+SET m.billing_rule_json=JSON_SET(m.billing_rule_json,
+  '$.videoTokenEstimate.dimensions."1080P"',CAST('{"16:9":[1920,1080],"9:16":[1080,1920],"4:3":[1664,1248],"3:4":[1248,1664],"1:1":[1440,1440],"21:9":[2206,946],"default":[2206,946]}' AS JSON),
+  '$.videoTokenEstimate.fallbackResolution','1080P',
+  '$.params[0].options',JSON_ARRAY('480P','720P','1080P'),
+  '$.skus',JSON_ARRAY_INSERT(JSON_ARRAY_INSERT(JSON_EXTRACT(m.billing_rule_json,'$.skus'),
+    '$[2]',CAST('{"skuCode":"SEEDANCE25_1080P_INVIDEO","skuName":"Seedance2.5 1080P含输入视频","enabled":true,"priority":3,"match":{"resolution":"1080P","inputVideoCountMin":1},"price":18.63,"inputPricePerMillion":0,"outputPricePerMillion":46,"remark":"官方46元/百万token；价格按实际输出Token结算"}' AS JSON)),'$[5]',CAST('{"skuCode":"SEEDANCE25_1080P","skuName":"Seedance2.5 1080P","enabled":true,"priority":13,"match":{"resolution":"1080P"},"price":18.711,"inputPricePerMillion":0,"outputPricePerMillion":77,"remark":"官方77元/百万token；价格按实际输出Token结算"}' AS JSON)),
+  '$.skus[6].price',18.711,'$.skus[6].outputPricePerMillion',77),
+  m.capability_json=JSON_SET(m.capability_json,'$.sizeOptions',JSON_ARRAY('480P','720P','1080P'))
+WHERE p.provider_code='volcengine' AND m.real_model_code='doubao-seedance-2-5-260628'
+  AND m.status='1' AND m.create_by='system' AND COALESCE(m.update_by,'system')='system'
+  AND JSON_VALID(m.billing_rule_json)=1 AND JSON_VALID(m.capability_json)=1
+  AND JSON_UNQUOTE(JSON_EXTRACT(m.billing_rule_json,'$.skus[0].skuCode'))='SEEDANCE25_480P_INVIDEO'
+  AND JSON_CONTAINS_PATH(m.billing_rule_json,'one','$.videoTokenEstimate.dimensions."1080P"')=0;
+UPDATE aid_ai_model m JOIN aid_ai_provider p ON p.id=m.provider_id
+SET m.capability_json=JSON_SET(m.capability_json,'$.sizeOptions',JSON_ARRAY('480P','720P','1080P'))
+WHERE p.provider_code='volcengine' AND m.real_model_code='doubao-seedance-2-5-260628'
+  AND m.status='1' AND m.create_by='system' AND COALESCE(m.update_by,'system')='system'
+  AND JSON_VALID(m.capability_json)=1
+  AND JSON_CONTAINS(JSON_EXTRACT(m.capability_json,'$.sizeOptions'),JSON_QUOTE('1080P'))=0;
+UPDATE aid_ai_model_capability c JOIN aid_ai_model m ON m.id=c.model_id
+JOIN aid_ai_provider p ON p.id=m.provider_id
+SET c.definition_json=JSON_SET(c.definition_json,'$.parameters[3].properties[0].choices',JSON_ARRAY('480P','720P','1080P'))
+WHERE p.provider_code='volcengine' AND m.real_model_code='doubao-seedance-2-5-260628'
+  AND m.status='1' AND m.create_by='system' AND COALESCE(m.update_by,'system')='system'
+  AND JSON_VALID(c.definition_json)=1
+  AND JSON_CONTAINS_PATH(c.definition_json,'one','$.parameters[3].properties[0].choices')=1;
+UPDATE aid_ai_model_protocol_binding b JOIN aid_ai_model m ON m.id=b.model_id
+JOIN aid_ai_provider p ON p.id=m.provider_id
+SET b.definition_json=JSON_SET(b.definition_json,'$.capability.sizeOptions',JSON_ARRAY('480P','720P','1080P'))
+WHERE p.provider_code='volcengine' AND m.real_model_code='doubao-seedance-2-5-260628'
+  AND m.status='1' AND m.create_by='system' AND COALESCE(m.update_by,'system')='system'
+  AND JSON_VALID(b.definition_json)=1;
+SET @seedance25_verified_rule := NULL;
+-- Reference FX: Bank of China USD middle CNY 674.89 per USD 100, published 2026-09-26.
+-- WaveSpeed official USD 0.005/billed second; Topaz API Developer tier USD 0.10/credit.
+-- Kling Omni edit CNY 0.70/0.90/2.50 per second by 720P/1080P/4K, supplied channel quotation.
+SET @wavespeed_depth_cny_rule := '{"mode":"SKU","meterType":"PER_SECOND","chargeType":"VIDEO","preHold":true,"matchStrategy":"FIRST_HIT","skus":[{"skuCode":"WAVESPEED_DEPTH_VIDEO","skuName":"深度视频每计费秒","enabled":true,"priority":1,"match":{},"pricePerSecond":0.0337445,"remark":"官方USD 0.005/秒；按2026-09-26中行美元中间价6.7489换算，最少计3秒"}]}';
+SET @topaz_video_cny_rule := '{"mode":"SKU","meterType":"PER_CREDIT","chargeType":"VIDEO","preHold":true,"matchStrategy":"FIRST_HIT","skus":[{"skuCode":"TOPAZ_VIDEO_CREDIT","skuName":"Topaz API视频积分","enabled":true,"priority":1,"match":{},"price":0.67489,"remark":"官方API Developer档USD 0.10/积分；按2026-09-26中行美元中间价6.7489换算；实际订阅档可由管理员调整"}]}';
+SET @kling_omni_edit_cny_rule := '{"mode":"SKU","meterType":"PER_SECOND","chargeType":"VIDEO","preHold":true,"matchStrategy":"FIRST_HIT","params":[{"code":"resolution","name":"分辨率","type":"ENUM","options":["720P","1080P","4K"],"required":true}],"skus":[{"skuCode":"KLING30_OMNI_EDIT_720P","skuName":"Omni编辑720P","enabled":true,"priority":1,"match":{"resolution":"720P"},"pricePerSecond":0.7,"price":3.5,"remark":"用户提供的渠道报价0.7元/秒"},{"skuCode":"KLING30_OMNI_EDIT_1080P","skuName":"Omni编辑1080P","enabled":true,"priority":2,"match":{"resolution":"1080P"},"pricePerSecond":0.9,"price":4.5,"remark":"用户提供的渠道报价0.9元/秒"},{"skuCode":"KLING30_OMNI_EDIT_4K","skuName":"Omni编辑4K","enabled":true,"priority":3,"match":{"resolution":"4K"},"pricePerSecond":2.5,"price":12.5,"remark":"用户提供的渠道报价2.5元/秒"}]}';
+UPDATE aid_ai_model SET billing_rule_json=@wavespeed_depth_cny_rule,
+  remark='Depth Anything Video; official USD 0.005/billed second; CNY conversion 2026-09-26 BOC middle rate'
+WHERE model_code='wavespeed-depth-anything-video' AND status='1' AND create_by='system'
+  AND COALESCE(NULLIF(update_by,''),'system')='system' AND billing_rule_json IS NULL;
+UPDATE aid_ai_model SET billing_rule_json=@topaz_video_cny_rule,
+  remark='Topaz API Developer tier USD 0.10/credit; CNY conversion 2026-09-26 BOC middle rate; verify account plan before enabling'
+WHERE model_code='topaz-proteus-video-express' AND status='1' AND create_by='system'
+  AND COALESCE(NULLIF(update_by,''),'system')='system' AND billing_rule_json IS NULL;
+UPDATE aid_ai_model SET billing_rule_json=@kling_omni_edit_cny_rule,
+  remark='Omni base_video; channel edit rate by 720P/1080P/4K; verify channel availability before enabling'
+WHERE model_code='kling-3.0-omni-edit' AND status='1' AND create_by='system'
+  AND COALESCE(NULLIF(update_by,''),'system')='system' AND billing_rule_json IS NULL;
+SET @wavespeed_depth_cny_rule := NULL;
+SET @topaz_video_cny_rule := NULL;
+SET @kling_omni_edit_cny_rule := NULL;
+
+-- Seedance 2.5 模型归一：保留旧 ID/编码别名和原有计费配置。
+-- 本文件前段由公共未发布 SQL 的 Seedance 能力段组成，确保未运行该批次的环境也能独立执行。
+DROP TEMPORARY TABLE IF EXISTS tmp_seedance25_legacy_unify;
+CREATE TEMPORARY TABLE tmp_seedance25_legacy_unify (
+  model_id BIGINT NOT NULL PRIMARY KEY,
+  model_code VARCHAR(100) NOT NULL,
+  capability_code VARCHAR(96) NOT NULL
+);
+INSERT INTO tmp_seedance25_legacy_unify
+SELECT m.id,m.model_code,
+  CASE m.model_code
+    WHEN 'doubao-seedance-2.5-text' THEN 'text_to_video'
+    WHEN 'doubao-seedance-2.5-first-frame' THEN 'image_to_video'
+    WHEN 'doubao-seedance-2.5-first-last-frame' THEN 'start_end_to_video'
+    WHEN 'doubao-seedance-2.5-reference' THEN 'reference_to_video'
+    WHEN 'doubao-seedance-2.5-edit' THEN 'video_edit'
+    WHEN 'doubao-seedance-2.5-extend' THEN 'video_extend'
+  END
+FROM aid_ai_model m JOIN aid_ai_provider p ON p.id=m.provider_id
+WHERE p.provider_code='volcengine' AND m.del_flag='0'
+  AND m.real_model_code='doubao-seedance-2-5-260628'
+  AND m.model_code IN ('doubao-seedance-2.5-text','doubao-seedance-2.5-first-frame',
+    'doubao-seedance-2.5-first-last-frame','doubao-seedance-2.5-reference',
+    'doubao-seedance-2.5-edit','doubao-seedance-2.5-extend');
+
+SET @seedance25_canonical_id := (SELECT m.id FROM aid_ai_model m
+  JOIN aid_ai_provider p ON p.id=m.provider_id
+  WHERE p.provider_code='volcengine' AND m.model_code='doubao-seedance-2.5'
+    AND m.del_flag='0' LIMIT 1);
+SET @seedance25_text_id := (SELECT model_id FROM tmp_seedance25_legacy_unify
+  WHERE capability_code='text_to_video' LIMIT 1);
+UPDATE aid_ai_model m
+SET m.model_code='doubao-seedance-2.5',m.model_name='豆包 Seedance 2.5',
+    m.supports_image_input=1,m.supports_multi_image_input=1,
+    m.supports_first_frame=1,m.supports_last_frame=1,
+    m.capability_json=JSON_SET(JSON_REMOVE(m.capability_json,
+      '$.videoScenario','$.allowedInputs','$.requiredInputs','$.requiredAnyOf','$.inputImageRole'),
+      '$.allowedScenes',JSON_ARRAY('textToVideo','imageToVideo','startEndToVideo',
+        'referenceToVideo','videoToVideo'),
+      '$.sceneRules',JSON_OBJECT(
+        'textToVideo',JSON_OBJECT('allowedInputs',JSON_ARRAY('text')),
+        'imageToVideo',JSON_OBJECT('requiredInputs',JSON_ARRAY('firstFrame'),
+          'allowedInputs',JSON_ARRAY('text','firstFrame'),'aspectRatioOptions',JSON_ARRAY('adaptive')),
+        'startEndToVideo',JSON_OBJECT('requiredInputs',JSON_ARRAY('firstFrame','lastFrame'),
+          'allowedInputs',JSON_ARRAY('text','firstFrame','lastFrame'),
+          'aspectRatioOptions',JSON_ARRAY('adaptive')),
+        'referenceToVideo',JSON_OBJECT('requiredAnyOf',JSON_ARRAY('image','video','audio'),
+          'allowedInputs',JSON_ARRAY('text','image','video','audio')),
+        'videoToVideo',JSON_OBJECT('requiredInputs',JSON_ARRAY('video'),
+          'allowedInputs',JSON_ARRAY('text','image','video','audio'))),
+      '$.supportsImageInput',TRUE,'$.supportsMultiImageInput',TRUE,
+      '$.supportsFirstFrame',TRUE,'$.supportsLastFrame',TRUE,
+      '$.supportsVideoInput',TRUE,'$.supportsReferenceAudio',TRUE,
+      '$.maxReferenceImages',30,'$.maxReferenceVideos',10,'$.maxReferenceAudios',10,
+      '$.maxReferenceMaterials',50),
+    m.config_version=COALESCE(m.config_version,0)+1,
+    m.update_time=NOW(),m.update_by='system'
+WHERE m.id=@seedance25_text_id AND @seedance25_canonical_id IS NULL
+  AND JSON_VALID(m.capability_json)=1;
+SET @seedance25_canonical_id := (SELECT m.id FROM aid_ai_model m
+  JOIN aid_ai_provider p ON p.id=m.provider_id
+  WHERE p.provider_code='volcengine' AND m.model_code='doubao-seedance-2.5'
+    AND m.del_flag='0' LIMIT 1);
+
+INSERT INTO aid_ai_model_capability
+  (model_id,capability_code,generate_mode,definition_json,sort_order,
+   create_time,create_by,update_time,update_by,remark)
+SELECT @seedance25_canonical_id,l.capability_code,c.generate_mode,
+  JSON_SET(c.definition_json,'$.defaultCapability',
+    IF(l.capability_code='text_to_video',TRUE,FALSE)),
+  c.sort_order,NOW(),'system',NOW(),'system','Seedance official capability contract'
+FROM tmp_seedance25_legacy_unify l
+JOIN aid_ai_model_capability c ON c.model_id=l.model_id AND c.capability_code=l.capability_code
+WHERE @seedance25_canonical_id IS NOT NULL
+  AND NOT EXISTS (SELECT 1 FROM aid_ai_model_capability x
+    WHERE x.model_id=@seedance25_canonical_id AND x.capability_code=l.capability_code);
+
+INSERT INTO aid_ai_model_protocol_binding
+  (model_id,capability_code,binding_code,protocol,definition_json,sort_order,
+   create_time,create_by,update_time,update_by,remark)
+SELECT @seedance25_canonical_id,b.capability_code,b.binding_code,b.protocol,
+  b.definition_json,b.sort_order,NOW(),'system',NOW(),'system',b.remark
+FROM tmp_seedance25_legacy_unify l
+JOIN aid_ai_model_protocol_binding b ON b.model_id=l.model_id
+  AND b.capability_code=l.capability_code
+WHERE @seedance25_canonical_id IS NOT NULL
+  AND NOT EXISTS (SELECT 1 FROM aid_ai_model_protocol_binding x
+    WHERE x.model_id=@seedance25_canonical_id AND x.capability_code=b.capability_code
+      AND x.binding_code=b.binding_code);
+
+-- 将旧 Seedance 2.5 场景模型各自的计费规则保留到对应调用协议。
+UPDATE aid_ai_model_protocol_binding binding_row
+JOIN tmp_seedance25_legacy_unify old ON binding_row.model_id=@seedance25_canonical_id
+  AND binding_row.capability_code=old.capability_code
+  AND binding_row.binding_code=CONCAT('seedance_official_',old.model_id)
+JOIN aid_ai_model source_model ON source_model.id=old.model_id
+SET binding_row.definition_json=JSON_SET(binding_row.definition_json,
+      '$.billingMode',source_model.billing_mode,
+      '$.billingRule',JSON_EXTRACT(source_model.billing_rule_json,'$'),
+      '$.costCredits',source_model.cost_credits),
+    binding_row.update_time=NOW(),binding_row.update_by='system'
+WHERE JSON_VALID(binding_row.definition_json)=1
+  AND JSON_VALID(source_model.billing_rule_json)=1
+  AND JSON_CONTAINS_PATH(binding_row.definition_json,'one','$.billingRule')=0;
+
+-- Fresh canonical seeds use the model's verified SKU rule for each official route.
+-- Existing per-scene route billing is retained when already configured.
+UPDATE aid_ai_model_protocol_binding binding_row
+JOIN aid_ai_model source_model ON source_model.id=binding_row.model_id
+JOIN aid_ai_provider provider_row ON provider_row.id=source_model.provider_id
+SET binding_row.definition_json=JSON_SET(binding_row.definition_json,
+      '$.billingMode',source_model.billing_mode,
+      '$.billingRule',JSON_EXTRACT(source_model.billing_rule_json,'$'),
+      '$.costCredits',source_model.cost_credits),
+    binding_row.update_time=NOW(),binding_row.update_by='system'
+WHERE provider_row.provider_code='volcengine'
+  AND source_model.model_code='doubao-seedance-2.5'
+  AND binding_row.protocol='seedance-video'
+  AND JSON_VALID(binding_row.definition_json)=1
+  AND JSON_VALID(source_model.billing_rule_json)=1
+  AND JSON_CONTAINS_PATH(binding_row.definition_json,'one','$.billingRule')=0;
+
+-- Seedance 2.0 系列沿用模型级 Token SKU 计费规则。
+UPDATE aid_ai_model_protocol_binding binding_row
+JOIN aid_ai_model source_model ON source_model.id=binding_row.model_id
+JOIN aid_ai_provider provider_row ON provider_row.id=source_model.provider_id
+SET binding_row.definition_json=JSON_SET(binding_row.definition_json,
+      '$.billingMode',source_model.billing_mode,
+      '$.billingRule',JSON_EXTRACT(source_model.billing_rule_json,'$'),
+      '$.costCredits',source_model.cost_credits),
+    binding_row.update_time=NOW(),binding_row.update_by='system'
+WHERE provider_row.provider_code='volcengine'
+  AND source_model.model_code IN ('doubao-seedance-2.0','doubao-seedance-2.0-fast',
+    'doubao-seedance-2.0-mini')
+  AND binding_row.protocol='seedance-video'
+  AND JSON_VALID(binding_row.definition_json)=1
+  AND JSON_VALID(source_model.billing_rule_json)=1
+  AND JSON_CONTAINS_PATH(binding_row.definition_json,'one','$.billingRule')=0;
+
+INSERT INTO aid_ai_model_alias
+  (legacy_model_id,legacy_model_code,model_id,capability_code,binding_code,
+   create_time,create_by,update_time,update_by,remark)
+SELECT l.model_id,l.model_code,@seedance25_canonical_id,l.capability_code,
+  CONCAT('seedance_official_',l.model_id),NOW(),'system',NOW(),'system',
+  'Seedance legacy scene model alias'
+FROM tmp_seedance25_legacy_unify l
+WHERE @seedance25_canonical_id IS NOT NULL
+  AND NOT EXISTS (SELECT 1 FROM aid_ai_model_alias a
+    WHERE a.legacy_model_id=l.model_id OR a.legacy_model_code=l.model_code);
+
+DROP TEMPORARY TABLE IF EXISTS tmp_seedance25_pool_links;
+CREATE TEMPORARY TABLE tmp_seedance25_pool_links AS
+SELECT DISTINCT f.id pool_id,f.func_code,l.model_id legacy_model_id,l.capability_code
+FROM aid_ai_model_func_config f JOIN tmp_seedance25_legacy_unify l
+  ON JSON_VALID(f.model_ids)=1
+  AND JSON_CONTAINS(f.model_ids,CAST(CAST(l.model_id AS CHAR) AS JSON),'$')=1
+WHERE f.del_flag='0' AND @seedance25_canonical_id IS NOT NULL;
+
+INSERT INTO aid_ai_business_model_binding
+  (func_code,model_id,capability_code,default_capability,defaults_json,sort_order,
+   create_time,create_by,update_time,update_by,remark)
+SELECT b.func_code,@seedance25_canonical_id,b.capability_code,b.default_capability,
+  b.defaults_json,b.sort_order,NOW(),'system',NOW(),'system',b.remark
+FROM aid_ai_business_model_binding b JOIN tmp_seedance25_legacy_unify l
+  ON l.model_id=b.model_id AND l.capability_code=b.capability_code
+WHERE @seedance25_canonical_id IS NOT NULL
+  AND NOT EXISTS (SELECT 1 FROM aid_ai_business_model_binding x
+    WHERE x.func_code=b.func_code AND x.model_id=@seedance25_canonical_id
+      AND x.capability_code=b.capability_code);
+
+INSERT INTO aid_ai_business_model_binding
+  (func_code,model_id,capability_code,default_capability,defaults_json,sort_order,
+   create_time,create_by,update_time,update_by,remark)
+SELECT DISTINCT p.func_code,@seedance25_canonical_id,p.capability_code,
+  IF(EXISTS (SELECT 1 FROM aid_ai_business_model_binding existing
+       WHERE existing.func_code=p.func_code AND existing.model_id=@seedance25_canonical_id
+         AND existing.default_capability=1),0,
+    IF((p.func_code IN ('main_storyboard_video_image','main_storyboard_video_grid')
+          AND p.capability_code='image_to_video')
+      OR (p.func_code='main_storyboard_video_edge'
+          AND p.capability_code='start_end_to_video')
+      OR (p.func_code IN ('main_storyboard_video','main_storyboard_video_multi_pro')
+          AND p.capability_code='reference_to_video'),1,0)),
+  NULL,0,NOW(),'system',NOW(),'system','Seedance business capability binding'
+FROM tmp_seedance25_pool_links p
+WHERE NOT EXISTS (SELECT 1 FROM aid_ai_business_model_binding x
+  WHERE x.func_code=p.func_code AND x.model_id=@seedance25_canonical_id
+    AND x.capability_code=p.capability_code);
+
+DROP TEMPORARY TABLE IF EXISTS tmp_seedance25_pool_members;
+CREATE TEMPORARY TABLE tmp_seedance25_pool_members (
+  pool_id BIGINT NOT NULL,ordinal INT NOT NULL,model_id BIGINT NOT NULL,
+  PRIMARY KEY (pool_id,ordinal)
+);
+INSERT INTO tmp_seedance25_pool_members
+SELECT f.id,d0.n+10*d1.n+100*d2.n,
+  CAST(JSON_UNQUOTE(JSON_EXTRACT(f.model_ids,
+    CONCAT('$[',d0.n+10*d1.n+100*d2.n,']'))) AS UNSIGNED)
+FROM aid_ai_model_func_config f
+JOIN (SELECT DISTINCT pool_id FROM tmp_seedance25_pool_links) affected ON affected.pool_id=f.id
+CROSS JOIN (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) d0
+CROSS JOIN (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) d1
+CROSS JOIN (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) d2
+WHERE d0.n+10*d1.n+100*d2.n < JSON_LENGTH(f.model_ids);
+UPDATE tmp_seedance25_pool_members member
+JOIN tmp_seedance25_legacy_unify old ON old.model_id=member.model_id
+SET member.model_id=@seedance25_canonical_id;
+DROP TEMPORARY TABLE IF EXISTS tmp_seedance25_pool_distinct;
+CREATE TEMPORARY TABLE tmp_seedance25_pool_distinct AS
+SELECT pool_id,model_id,MIN(ordinal) first_ordinal
+FROM tmp_seedance25_pool_members GROUP BY pool_id,model_id;
+SET SESSION group_concat_max_len=GREATEST(@@session.group_concat_max_len,65535);
+DROP TEMPORARY TABLE IF EXISTS tmp_seedance25_pool_json;
+CREATE TEMPORARY TABLE tmp_seedance25_pool_json AS
+SELECT pool_id,CONCAT('[',GROUP_CONCAT(model_id ORDER BY first_ordinal SEPARATOR ','),']') model_ids
+FROM tmp_seedance25_pool_distinct GROUP BY pool_id;
+UPDATE aid_ai_model_func_config f JOIN tmp_seedance25_pool_json next ON next.pool_id=f.id
+SET f.model_ids=next.model_ids,f.update_time=NOW(),f.update_by='system'
+WHERE NOT (f.model_ids <=> next.model_ids);
+
+UPDATE aid_agent a JOIN tmp_seedance25_legacy_unify old ON BINARY a.model_code=BINARY old.model_code
+SET a.model_code='doubao-seedance-2.5';
+UPDATE aid_gen_agent_pool a JOIN tmp_seedance25_legacy_unify old ON BINARY a.model_code=BINARY old.model_code
+SET a.model_code='doubao-seedance-2.5';
+UPDATE aid_skill a JOIN tmp_seedance25_legacy_unify old ON BINARY a.model_code=BINARY old.model_code
+SET a.model_code='doubao-seedance-2.5';
+UPDATE aid_provider_error_rule a JOIN tmp_seedance25_legacy_unify old ON BINARY a.model_code=BINARY old.model_code
+SET a.model_code='doubao-seedance-2.5';
+UPDATE aid_role_voice_binding a JOIN tmp_seedance25_legacy_unify old ON a.model_id=old.model_id
+SET a.model_id=@seedance25_canonical_id
+WHERE old.model_id<>@seedance25_canonical_id;
+UPDATE aid_audio_asset a JOIN tmp_seedance25_legacy_unify old ON a.voice_model_id=old.model_id
+SET a.voice_model_id=@seedance25_canonical_id
+WHERE old.model_id<>@seedance25_canonical_id;
+UPDATE aid_ai_voice_library a JOIN tmp_seedance25_legacy_unify old ON a.model_id=old.model_id
+SET a.model_id=@seedance25_canonical_id
+WHERE old.model_id<>@seedance25_canonical_id;
+UPDATE aid_ai_model m JOIN tmp_seedance25_legacy_unify old ON old.model_id=m.id
+SET m.status='1',m.del_flag='1',m.update_time=NOW(),m.update_by='system'
+WHERE m.id<>@seedance25_canonical_id AND @seedance25_canonical_id IS NOT NULL;
+
+DROP TEMPORARY TABLE IF EXISTS tmp_seedance25_pool_json;
+DROP TEMPORARY TABLE IF EXISTS tmp_seedance25_pool_distinct;
+DROP TEMPORARY TABLE IF EXISTS tmp_seedance25_pool_members;
+DROP TEMPORARY TABLE IF EXISTS tmp_seedance25_pool_links;
+DROP TEMPORARY TABLE IF EXISTS tmp_seedance25_legacy_unify;
+SET @seedance25_text_id := NULL;
+SET @seedance25_canonical_id := NULL;
+
+
+-- Model catalog: complete verified Seedance 2.0 Mini list-price SKUs without changing enablement.
+-- Official list prices are 14/23 CNY per million tokens with/without video input (480P/720P).
+SET @aid_seedance20_base_rule := (
+  SELECT m.billing_rule_json FROM aid_ai_model m
+  JOIN aid_ai_provider p ON p.id=m.provider_id AND p.provider_code='volcengine'
+  WHERE m.model_code='doubao-seedance-2.0' AND m.del_flag='0' LIMIT 1
+);
+UPDATE aid_ai_model m
+JOIN aid_ai_provider p ON p.id=m.provider_id AND p.provider_code='volcengine'
+SET m.billing_rule_json=JSON_SET(
+      JSON_REMOVE(JSON_EXTRACT(@aid_seedance20_base_rule,'$'),
+        '$.videoTokenEstimate.dimensions."1080P"','$.videoTokenEstimate.dimensions."4K"'),
+      '$.params[0].options',JSON_ARRAY('480P','720P'),
+      '$.videoTokenEstimate.fallbackResolution','720P',
+      '$.skus',JSON_ARRAY(
+        JSON_OBJECT('skuCode','SEEDANCE20_MINI_480P_INVIDEO','skuName','Seedance 2.0 Mini 480P with video input',
+          'enabled',TRUE,'priority',1,'match',JSON_OBJECT('resolution','480P','inputVideoCountMin',1),
+          'inputPricePerMillion',0,'outputPricePerMillion',14),
+        JSON_OBJECT('skuCode','SEEDANCE20_MINI_720P_INVIDEO','skuName','Seedance 2.0 Mini 720P with video input',
+          'enabled',TRUE,'priority',2,'match',JSON_OBJECT('resolution','720P','inputVideoCountMin',1),
+          'inputPricePerMillion',0,'outputPricePerMillion',14),
+        JSON_OBJECT('skuCode','SEEDANCE20_MINI_480P','skuName','Seedance 2.0 Mini 480P',
+          'enabled',TRUE,'priority',11,'match',JSON_OBJECT('resolution','480P'),
+          'inputPricePerMillion',0,'outputPricePerMillion',23),
+        JSON_OBJECT('skuCode','SEEDANCE20_MINI_720P','skuName','Seedance 2.0 Mini 720P',
+          'enabled',TRUE,'priority',12,'match',JSON_OBJECT('resolution','720P'),
+          'inputPricePerMillion',0,'outputPricePerMillion',23))),
+    m.billing_mode='SKU',m.billing_version=COALESCE(m.billing_version,0)+1,
+    m.config_version=COALESCE(m.config_version,0)+1,
+    m.update_time=NOW(),m.update_by='system',
+    m.official_price_url='https://docs.volcengine.com/docs/ark/model-pricing?lang=zh'
+WHERE m.model_code='doubao-seedance-2.0-mini' AND m.del_flag='0'
+  AND @aid_seedance20_base_rule IS NOT NULL AND JSON_VALID(@aid_seedance20_base_rule)
+  AND (m.billing_rule_json IS NULL OR JSON_VALID(m.billing_rule_json)=0
+    OR COALESCE(JSON_LENGTH(JSON_EXTRACT(m.billing_rule_json,'$.skus')),0)=0);
+SET @aid_seedance20_base_rule := NULL;
+
+-- TokenDance Ark image generations accepts reference images for the full Seedream 5.0 route.
+-- The separate OpenAI-compatible generations route rejects reference images and stays text-only.
+UPDATE aid_ai_model m
+JOIN aid_ai_provider p ON p.id=m.provider_id AND p.provider_code='tokendance'
+SET m.capability_json=JSON_SET(m.capability_json,'$.sceneRules',
+      JSON_OBJECT('textToImage',JSON_OBJECT('supportsSizePreset',TRUE,'supportsAspectRatio',TRUE),
+        'imageToImage',JSON_OBJECT('supportsSizePreset',TRUE,'supportsAspectRatio',TRUE,
+          'aspectRatioFollowInput',FALSE))),
+    m.capability_inited=1,m.config_version=COALESCE(m.config_version,0)+1,
+    m.update_time=NOW(),m.update_by='system'
+WHERE m.real_model_code IN ('seedream-5.0-lite','seedream-5.0-pro')
+  AND m.protocol='tokendance:ark:image-generations' AND m.supports_image_input=1
+  AND m.del_flag='0' AND JSON_VALID(m.capability_json)
+  AND JSON_EXTRACT(m.capability_json,'$.sceneRules') IS NULL;
+
+-- MiniMax retired music-generation API: retain model enablement. Music 3.0/2.6
+-- use the published historical 1 CNY/song; music-cover is operator-set 1 CNY/call.
+UPDATE aid_ai_model m
+JOIN aid_ai_provider p ON p.id=m.provider_id AND p.provider_code='minimax'
+SET m.billing_mode='SKU',m.billing_rule_json=JSON_OBJECT('mode','SKU','meterType','SKU_PACKAGE',
+      'chargeType','AUDIO','preHold',TRUE,'matchStrategy','FIRST_HIT',
+      'skus',JSON_ARRAY(JSON_OBJECT('skuCode',CONCAT('MINIMAX_',UPPER(REPLACE(m.model_code,'-','_'))),
+        'skuName',m.model_name,'enabled',TRUE,'priority',1,'match',JSON_OBJECT(),'price',1.0))),
+    m.billing_version=COALESCE(m.billing_version,0)+1,
+    m.config_version=COALESCE(m.config_version,0)+1,
+    m.update_time=NOW(),m.update_by='system',
+    m.official_price_url=IF(m.model_code='music-cover',m.official_price_url,
+      'https://platform.minimax.cn/docs/guides/pricing-paygo')
+WHERE m.model_code IN ('music-3.0','music-2.6','music-cover') AND m.del_flag='0'
+  AND (m.billing_rule_json IS NULL OR JSON_VALID(m.billing_rule_json)=0
+    OR COALESCE(JSON_LENGTH(JSON_EXTRACT(m.billing_rule_json,'$.skus')),0)=0);
+
+-- Keep installed system model forms editable after installation.
+UPDATE aid_ai_model_capability c JOIN aid_ai_model m ON m.id=c.model_id
+SET c.definition_json=JSON_SET(c.definition_json,'$.parameters[0].items',
+  JSON_OBJECT('name','resourceId','label','视频资源 ID','type','integer'))
+WHERE m.model_code IN ('wavespeed-depth-anything-video','topaz-proteus-video-express',
+                       'tencent-mps-subtitle-erase') AND c.create_by='system'
+  AND JSON_VALID(c.definition_json)=1
+  AND JSON_CONTAINS_PATH(c.definition_json,'one','$.parameters[0].items')=0;
+UPDATE aid_ai_model_capability c JOIN aid_ai_model m ON m.id=c.model_id
+SET c.definition_json=JSON_SET(c.definition_json,'$.parameters[3].items',
+  JSON_OBJECT('name','area','label','时间区域','type','object','properties',JSON_ARRAY(
+    JSON_OBJECT('name','beginMs','label','开始毫秒','type','integer'),
+    JSON_OBJECT('name','endMs','label','结束毫秒','type','integer'),
+    JSON_OBJECT('name','boxes','label','画面区域','type','array','items',
+      JSON_OBJECT('name','box','label','矩形','type','object','properties',JSON_ARRAY(
+        JSON_OBJECT('name','x1','label','左边界','type','number'),
+        JSON_OBJECT('name','y1','label','上边界','type','number'),
+        JSON_OBJECT('name','x2','label','右边界','type','number'),
+        JSON_OBJECT('name','y2','label','下边界','type','number')))))))
+WHERE m.model_code='tencent-mps-subtitle-erase' AND c.create_by='system'
+  AND JSON_VALID(c.definition_json)=1
+  AND JSON_CONTAINS_PATH(c.definition_json,'one','$.parameters[3].items')=0;
+UPDATE aid_ai_model_capability c JOIN aid_ai_model m ON m.id=c.model_id
+SET c.definition_json=JSON_SET(c.definition_json,'$.parameters',JSON_ARRAY(
+  JSON_EXTRACT(c.definition_json,'$.parameters[0]'),
+  JSON_OBJECT('name','options','label','处理参数','type','object','properties',JSON_ARRAY(
+    JSON_EXTRACT(c.definition_json,'$.parameters[1]'),
+    JSON_EXTRACT(c.definition_json,'$.parameters[2]'),
+    JSON_EXTRACT(c.definition_json,'$.parameters[3]'),
+    JSON_EXTRACT(c.definition_json,'$.parameters[4]'),
+    JSON_EXTRACT(c.definition_json,'$.parameters[5]')))))
+WHERE m.model_code='topaz-proteus-video-express' AND c.create_by='system'
+  AND JSON_VALID(c.definition_json)=1
+  AND JSON_UNQUOTE(JSON_EXTRACT(c.definition_json,'$.parameters[1].name'))='targetResolution';
+UPDATE aid_ai_model_capability c JOIN aid_ai_model m ON m.id=c.model_id
+SET c.definition_json=JSON_SET(c.definition_json,'$.parameters',JSON_ARRAY(
+  JSON_EXTRACT(c.definition_json,'$.parameters[0]'),
+  JSON_OBJECT('name','options','label','处理参数','type','object','properties',JSON_ARRAY(
+    JSON_EXTRACT(c.definition_json,'$.parameters[1]'),
+    JSON_EXTRACT(c.definition_json,'$.parameters[2]'),
+    JSON_EXTRACT(c.definition_json,'$.parameters[3]')))))
+WHERE m.model_code='tencent-mps-subtitle-erase' AND c.create_by='system'
+  AND JSON_VALID(c.definition_json)=1
+  AND JSON_UNQUOTE(JSON_EXTRACT(c.definition_json,'$.parameters[1].name'))='eraseMode';
+UPDATE aid_ai_model m
+SET m.capability_json=JSON_SET(m.capability_json,'$.referenceVideoMinDurationSeconds',2)
+WHERE m.model_code='doubao-seedance-2.5' AND JSON_VALID(m.capability_json)=1
+  AND JSON_TYPE(JSON_EXTRACT(m.capability_json,'$.referenceVideoMinDurationSeconds'))='STRING'
+  AND JSON_UNQUOTE(JSON_EXTRACT(m.capability_json,'$.referenceVideoMinDurationSeconds'))='2';
+UPDATE aid_ai_provider SET provider_category='OFFICIAL'
+WHERE provider_code='agnes' AND provider_category<>'OFFICIAL';
+UPDATE aid_ai_model_capability c JOIN aid_ai_model m ON m.id=c.model_id
+SET c.definition_json=JSON_SET(c.definition_json,
+  '$.label',CASE c.capability_code
+    WHEN 'text_to_video' THEN '文生视频'
+    WHEN 'image_to_video' THEN '首帧图生视频'
+    WHEN 'last_frame_to_video' THEN '尾帧图生视频'
+    WHEN 'start_end_to_video' THEN '首尾帧视频'
+    WHEN 'reference_to_video' THEN '多参考视频' END,
+  '$.parameters[0].label','提示词',
+  '$.parameters[1].label','视频时长',
+  '$.parameters[1].unit','秒',
+  '$.parameters[2].label','画面比例',
+  '$.parameters[3].label','生成参数',
+  '$.parameters[3].properties[0].label','输出规格')
+WHERE m.model_code IN ('minimax-h3-t2v','minimax-h3-official','minimax-h3-max-official')
+  AND JSON_VALID(c.definition_json)=1
+  AND HEX(JSON_UNQUOTE(JSON_EXTRACT(c.definition_json,'$.label'))) LIKE 'C383%';
+UPDATE aid_ai_model_protocol_binding b JOIN aid_ai_model m ON m.id=b.model_id
+SET b.definition_json=JSON_SET(b.definition_json,
+  '$.billingRule.skus[0].remark','按对应规格和时长计费',
+  '$.billingRule.skus[1].remark','按对应规格和时长计费',
+  '$.billingRule.params[0].name','分辨率',
+  '$.billingRule.params[1].name','时长',
+  '$.billingRule.params[1].unit','秒')
+WHERE m.model_code='minimax-h3-t2v'
+  AND JSON_VALID(b.definition_json)=1
+  AND JSON_CONTAINS_PATH(b.definition_json,'one','$.billingRule.params[0].name')=1
+  AND HEX(CAST(b.definition_json AS CHAR)) LIKE '%C383%';

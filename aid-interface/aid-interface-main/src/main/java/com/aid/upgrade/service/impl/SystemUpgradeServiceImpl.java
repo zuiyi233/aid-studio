@@ -70,6 +70,9 @@ public class SystemUpgradeServiceImpl implements ISystemUpgradeService {
 
     /** 更新源访问超时（毫秒） */
     private static final int FETCH_TIMEOUT_MS = 5_000;
+    private static final int GITHUB_FALLBACK_TIMEOUT_MS = 15_000;
+    private static final String OFFICIAL_GITHUB_MANIFEST_URL =
+            "https://raw.githubusercontent.com/gzxx-2025/aid-studio/master/release/latest.json";
 
     /** CPU不超过4核时，源码在线构建存在资源耗尽风险 */
     private static final int ONLINE_UPGRADE_WARNING_CPU_CORES = 4;
@@ -106,7 +109,7 @@ public class SystemUpgradeServiceImpl implements ISystemUpgradeService {
         vo.setCurrentVersion(currentVersion);
         vo.setCheckedAt(snapshot.checkedAt);
         vo.setCheckError(snapshot.error);
-        vo.setManifestUrl(resolveManifestUrl());
+        vo.setManifestUrl(Objects.nonNull(snapshot.sourceUrl) ? snapshot.sourceUrl : resolveManifestUrl());
 
         String updaterDownloadUrl = StrUtil.trimToNull(upgradeConfig.get(UpgradeConfigKeys.KEY_UPDATER_DOWNLOAD_URL));
         if (Objects.isNull(updaterDownloadUrl)) {
@@ -397,7 +400,7 @@ public class SystemUpgradeServiceImpl implements ISystemUpgradeService {
         // 主程序不再下载预构建大包：升级器校验签名清单中的目标版本后，
         // 从 GitHub/Gitee 同一版本标签拉取三端公开源码并在服务器本地构建。
         JSONObject task = buildTask("UPGRADE", currentVersion, manifest.getProductVersion());
-        task.put("manifestUrl", resolveManifestUrl());
+        task.put("manifestUrl", snapshot.sourceUrl);
         task.put("buildFromSource", true);
         task.put("keepBackups", resolveKeepBackups());
         updaterClient.submitTask(task);
@@ -440,7 +443,7 @@ public class SystemUpgradeServiceImpl implements ISystemUpgradeService {
             throw new ServiceException("升级包不可用");
         }
         JSONObject task = buildTask("UPDATER_UPGRADE", updater.getVersion(), latestUpdaterVersion);
-        task.put("manifestUrl", resolveManifestUrl());
+        task.put("manifestUrl", snapshot.sourceUrl);
         task.put("downloadUrl", manifest.getUpdater().getDownloadUrl());
         updaterClient.submitTask(task);
         log.info("已受理升级器在线升级任务, local={}, target={}", updater.getVersion(), latestUpdaterVersion);
@@ -571,7 +574,7 @@ public class SystemUpgradeServiceImpl implements ISystemUpgradeService {
             throw new ServiceException("回退包不完整");
         }
         JSONObject task = buildTask("ROLLBACK", currentVersion, release.getVersion());
-        task.put("manifestUrl", resolveManifestUrl());
+        task.put("manifestUrl", snapshot.sourceUrl);
         task.put("packageUrl", release.getPackageUrl());
         task.put("sha256", release.getSha256());
         task.put("databaseCompatible", release.getDatabaseCompatible());
@@ -844,12 +847,45 @@ public class SystemUpgradeServiceImpl implements ISystemUpgradeService {
      * 仅正式版时取顶层；同时接收测试版时取版本更高者（测试字段缺失时回退正式版）
      */
     private ManifestSnapshot fetchManifest() {
-        ManifestSnapshot root = fetchManifestFrom(resolveManifestUrl());
+        String primaryUrl = resolveManifestUrl();
+        ManifestSnapshot root = fetchManifestFrom(primaryUrl);
+        if (root.transportFailure) {
+            for (String mirrorUrl : officialMirrorUrls(primaryUrl)) {
+                log.warn("官方更新源不可访问，尝试已签名清单镜像, primary={}, mirror={}", primaryUrl, mirrorUrl);
+                root = fetchManifestFrom(mirrorUrl);
+                if (!root.transportFailure) {
+                    break;
+                }
+            }
+        }
         if (Objects.isNull(root.manifest)) {
             return finishSnapshot(root);
         }
         UpgradeManifest selected = selectByReleaseChannel(root.manifest);
-        return finishSnapshot(new ManifestSnapshot(selected, root.error, root.checkedAt, root.fetchedAtMs));
+        return finishSnapshot(new ManifestSnapshot(selected, root.error, root.checkedAt, root.fetchedAtMs,
+                root.sourceUrl, false));
+    }
+
+    static List<String> officialMirrorUrls(String manifestUrl) {
+        if (Objects.equals(manifestUrl, UpgradeConfigKeys.DEFAULT_MANIFEST_URL)) {
+            return List.of(OFFICIAL_GITHUB_MANIFEST_URL);
+        }
+        if (Objects.equals(manifestUrl, "https://gitee.com/gzxx-2025/aid-studio/raw/master/release/latest.json")) {
+            return List.of(
+                    UpgradeConfigKeys.DEFAULT_MANIFEST_URL,
+                    OFFICIAL_GITHUB_MANIFEST_URL);
+        }
+        if (Objects.equals(manifestUrl, "https://gitee.com/gzxx-2025/aid-server/raw/master/release/latest.json")) {
+            return List.of(
+                    UpgradeConfigKeys.DEFAULT_MANIFEST_URL,
+                    OFFICIAL_GITHUB_MANIFEST_URL);
+        }
+        return List.of();
+    }
+
+    static int fetchTimeoutMs(String manifestUrl) {
+        return Objects.equals(manifestUrl, OFFICIAL_GITHUB_MANIFEST_URL)
+                ? GITHUB_FALLBACK_TIMEOUT_MS : FETCH_TIMEOUT_MS;
     }
 
     /**
@@ -964,14 +1000,15 @@ public class SystemUpgradeServiceImpl implements ISystemUpgradeService {
             return new ManifestSnapshot(null, "更新地址格式错误", checkedAt, now);
         }
         try (HttpResponse response = HttpRequest.get(manifestUrl)
-                .timeout(FETCH_TIMEOUT_MS)
+                .timeout(fetchTimeoutMs(manifestUrl))
                 // Gitee raw 等发布源会 302 跳转到 CDN，需跟随重定向
                 .setFollowRedirects(true)
                 .header("Accept", "application/json")
                 .execute()) {
             if (!response.isOk()) {
                 log.error("更新源响应异常, url={}, status={}", manifestUrl, response.getStatus());
-                return new ManifestSnapshot(null, "更新源响应异常(" + response.getStatus() + ")", checkedAt, now);
+                return new ManifestSnapshot(null, "更新源响应异常(" + response.getStatus() + ")", checkedAt, now,
+                        manifestUrl, true);
             }
             String body = response.body();
             if (StrUtil.isBlank(body) || body.length() > MAX_MANIFEST_BYTES) {
@@ -987,10 +1024,10 @@ public class SystemUpgradeServiceImpl implements ISystemUpgradeService {
                 log.error("更新清单缺少版本号, url={}", manifestUrl);
                 return new ManifestSnapshot(null, "更新清单缺少版本号", checkedAt, now);
             }
-            return new ManifestSnapshot(manifest, null, checkedAt, now);
+            return new ManifestSnapshot(manifest, null, checkedAt, now, manifestUrl, false);
         } catch (Exception e) {
             log.error("访问更新源失败, url={}", manifestUrl, e);
-            return new ManifestSnapshot(null, "更新源访问失败", checkedAt, now);
+            return new ManifestSnapshot(null, "更新源访问失败", checkedAt, now, manifestUrl, true);
         }
     }
 
@@ -1020,7 +1057,13 @@ public class SystemUpgradeServiceImpl implements ISystemUpgradeService {
      */
     private String resolveManifestUrl() {
         String configured = StrUtil.trimToNull(readUpgradeConfig().get(UpgradeConfigKeys.KEY_MANIFEST_URL));
-        return Objects.isNull(configured) ? UpgradeConfigKeys.DEFAULT_MANIFEST_URL : configured;
+        return Objects.isNull(configured) || isLegacyOfficialManifestUrl(configured)
+                ? UpgradeConfigKeys.DEFAULT_MANIFEST_URL : configured;
+    }
+
+    static boolean isLegacyOfficialManifestUrl(String url) {
+        return Objects.equals(url, "https://gitee.com/gzxx-2025/aid-studio/raw/master/release/latest.json")
+                || Objects.equals(url, "https://gitee.com/gzxx-2025/aid-server/raw/master/release/latest.json");
     }
 
     private boolean isHttpUrl(String url) {
@@ -1064,12 +1107,21 @@ public class SystemUpgradeServiceImpl implements ISystemUpgradeService {
         private final String error;
         private final String checkedAt;
         private final long fetchedAtMs;
+        private final String sourceUrl;
+        private final boolean transportFailure;
 
         private ManifestSnapshot(UpgradeManifest manifest, String error, String checkedAt, long fetchedAtMs) {
+            this(manifest, error, checkedAt, fetchedAtMs, null, false);
+        }
+
+        private ManifestSnapshot(UpgradeManifest manifest, String error, String checkedAt, long fetchedAtMs,
+                String sourceUrl, boolean transportFailure) {
             this.manifest = manifest;
             this.error = error;
             this.checkedAt = checkedAt;
             this.fetchedAtMs = fetchedAtMs;
+            this.sourceUrl = sourceUrl;
+            this.transportFailure = transportFailure;
         }
     }
 }

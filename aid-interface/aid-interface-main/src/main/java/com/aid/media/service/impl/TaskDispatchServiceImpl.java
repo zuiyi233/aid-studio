@@ -814,10 +814,14 @@ public class TaskDispatchServiceImpl implements TaskDispatchService {
                 return client.query(modelConfig, task.getProviderTaskId());
             } else if (Objects.equals(task.getMediaType(), MediaType.AUDIO.name())) {
                 com.aid.media.provider.AudioProviderClient client = resolveAudioClient(task.getProtocol());
-                if (Objects.isNull(client)) {
-                    return null;
+                if (Objects.nonNull(client)) {
+                    return client.query(modelConfig, task.getProviderTaskId());
                 }
-                return client.query(modelConfig, task.getProviderTaskId());
+                // Some video-input protocols produce audio results. Their submission and
+                // polling contract stays with the video provider even though the task
+                // media type follows the output for result storage and billing.
+                VideoProviderClient videoClient = resolveVideoClient(task.getProtocol());
+                return videoClient == null ? null : videoClient.query(modelConfig, task.getProviderTaskId());
             } else {
                 TextProviderClient client = resolveTextClient(task.getProtocol());
                 if (Objects.isNull(client)) {

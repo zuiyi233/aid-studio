@@ -1,5 +1,8 @@
 package com.aid.media.service;
 
+import com.aid.common.aid.oss.config.OssConfigManager;
+import com.aid.common.aid.oss.core.OssTemplate;
+import com.aid.common.aid.oss.properties.OssProperties;
 import com.aid.common.aid.oss.util.MediaUrlResolver;
 import com.aid.common.error.TaskErrorCode;
 import com.aid.common.error.TaskErrorPresentation;
@@ -22,6 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -38,6 +42,8 @@ public class VerifiedMediaMetadataService {
     private static final long DOWNLOAD_TIMEOUT_SECONDS = 30;
     private final MediaUrlResolver urls;
     private final MpsConfigManager config;
+    private final OssConfigManager ossConfig;
+    private final OssTemplate ossTemplate;
 
     public Metadata inspect(String source, String kind) {
         Path file = null;
@@ -46,13 +52,17 @@ public class VerifiedMediaMetadataService {
         try {
             if (!urls.isSiteImageUrl(source)) throw new ServiceException("请使用本站素材");
             String originalAddress = urls.toFullUrl(source);
+            URI directCosAddress = signedCosAddress(source, originalAddress);
             long size = 0;
             for (int attempt = 1; attempt <= DOWNLOAD_ATTEMPTS; attempt++) {
-                String address = originalAddress;
+                String address = attempt == 1 && directCosAddress != null
+                        ? directCosAddress.toString() : originalAddress;
                 try {
                     for (int hop = 0; ; hop++) {
                         URI uri = URI.create(address);
-                        if (!urls.isSiteImageUrl(address) || !Set.of("http", "https").contains(uri.getScheme())
+                        boolean signedCosHop = directCosAddress != null && uri.equals(directCosAddress);
+                        if (!(signedCosHop || urls.isSiteImageUrl(address))
+                                || !Set.of("http", "https").contains(uri.getScheme())
                                 || uri.getHost() == null || uri.getUserInfo() != null || uri.getFragment() != null) {
                             throw new ServiceException("素材地址不可用");
                         }
@@ -69,7 +79,12 @@ public class VerifiedMediaMetadataService {
                             address = uri.resolve(location).toString();
                             continue;
                         }
-                        if (status != 200) throw new ServiceException("素材文件不可用");
+                        if (status != 200) {
+                            if (signedCosHop && attempt < DOWNLOAD_ATTEMPTS) {
+                                throw new java.io.IOException("signed COS read unavailable");
+                            }
+                            throw new ServiceException("素材文件不可用");
+                        }
                         break;
                     }
                     if (connection.getContentLengthLong() > MAX_BYTES) throw new ServiceException("素材文件过大");
@@ -88,7 +103,7 @@ public class VerifiedMediaMetadataService {
                     }
                     if (size == 0) throw new ServiceException("素材文件为空");
                     break;
-                } catch (SocketTimeoutException ex) {
+                } catch (java.io.IOException ex) {
                     if (connection != null) {
                         connection.disconnect();
                         connection = null;
@@ -102,7 +117,7 @@ public class VerifiedMediaMetadataService {
                         file = null;
                     }
                     if (attempt >= DOWNLOAD_ATTEMPTS) throw ex;
-                    log.warn("输入素材读取超时，执行有限重试: host={}, kind={}, attempt={}/{}",
+                    log.warn("输入素材读取失败，改由本站资源地址有限重试: host={}, kind={}, attempt={}/{}",
                             safeHost(address), kind, attempt, DOWNLOAD_ATTEMPTS);
                 }
             }
@@ -134,9 +149,9 @@ public class VerifiedMediaMetadataService {
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
             throw new ServiceException("素材解析中断");
-        } catch (SocketTimeoutException ex) {
-            throw TaskErrorPresentation.fromCode(
-                    TaskErrorCode.USER_FILE_DOWNLOAD_FAILED, "素材读取超时，请重试");
+        } catch (java.io.IOException ex) {
+            throw TaskErrorPresentation.fromCode(TaskErrorCode.USER_FILE_DOWNLOAD_FAILED,
+                    ex instanceof SocketTimeoutException ? "素材读取超时，请重试" : "素材读取失败，请重试");
         } catch (ServiceException ex) { throw ex; }
         catch (Exception ex) {
             log.info("输入素材元数据不可用: {}", ex.getClass().getSimpleName());
@@ -148,6 +163,80 @@ public class VerifiedMediaMetadataService {
                 try { Files.deleteIfExists(file); }
                 catch (Exception ex) { log.warn("输入素材探测临时文件待清理: {}", file); }
             }
+        }
+    }
+
+    /** 仅对当前 COS 存储中的本站资源走服务端签名直读，避免 CDN 回源/Range 行为拖慢报价。 */
+    private URI signedCosAddress(String source, String originalAddress) {
+        OssProperties properties = ossConfig.getOssProperties();
+        if (properties == null || !"cos".equalsIgnoreCase(properties.getUploadMode())
+                || properties.getCosBucketName() == null || properties.getCosRegion() == null) return null;
+        String expectedHost = properties.getCosBucketName() + ".cos."
+                + properties.getCosRegion() + ".myqcloud.com";
+        try {
+            URI original = URI.create(originalAddress);
+            URI cdn = URI.create(properties.getEffectiveCdnDomain());
+            if (!"https".equalsIgnoreCase(original.getScheme())
+                    || !"https".equalsIgnoreCase(cdn.getScheme())
+                    || !cdn.getHost().equalsIgnoreCase(original.getHost())
+                    || cdn.getPort() != original.getPort() || original.getUserInfo() != null
+                    || original.getFragment() != null || original.getRawQuery() != null) return null;
+            URI signed = URI.create(ossTemplate.getSignedUrl(source, 120));
+            if (!"https".equalsIgnoreCase(signed.getScheme())
+                    || !expectedHost.equalsIgnoreCase(signed.getHost())
+                    || !signed.getRawPath().equals(original.getRawPath())
+                    || signed.getRawQuery() == null || signed.getUserInfo() != null
+                    || signed.getFragment() != null || signed.getPort() != -1) return null;
+            return signed;
+        } catch (RuntimeException ex) {
+            log.warn("本站 COS 素材签名直读不可用，回退资源地址: errorType={}", ex.getClass().getSimpleName());
+            return null;
+        }
+    }
+
+    /** 仅为已登记本站资源解析当前存储桶中的对象路径，供需要 COS 原生输入的处理器使用。 */
+    public String trustedCosObjectPath(String source, String bucket, String region) {
+        OssProperties properties = ossConfig.getOssProperties();
+        if (properties == null || !"cos".equalsIgnoreCase(properties.getUploadMode())
+                || !Objects.equals(properties.getCosBucketName(), bucket)
+                || !Objects.equals(properties.getCosRegion(), region)) {
+            log.error("COS media mapping config rejected, configured={}, cosMode={}, bucketMatch={}, regionMatch={}",
+                    properties != null, properties != null && "cos".equalsIgnoreCase(properties.getUploadMode()),
+                    properties != null && Objects.equals(properties.getCosBucketName(), bucket),
+                    properties != null && Objects.equals(properties.getCosRegion(), region));
+            return null;
+        }
+        // The signing path covers normal storage URLs. Some older COS configurations cannot
+        // presign from their CDN alias; an exact current-CDN path remains a valid same-bucket key.
+        URI signed = signedCosAddress(source, urls.toFullUrl(source));
+        if (signed != null) return signed.getPath();
+        try {
+            URI original = URI.create(urls.toFullUrl(source));
+            URI configured = URI.create(properties.getEffectiveCdnDomain());
+            String path = original.getRawPath();
+            String basePath = configured.getRawPath();
+            if (!"https".equalsIgnoreCase(original.getScheme())
+                    || !"https".equalsIgnoreCase(configured.getScheme())
+                    || !Objects.equals(original.getHost(), configured.getHost())
+                    || original.getPort() != configured.getPort() || original.getPort() != -1
+                    || original.getUserInfo() != null || original.getRawQuery() != null
+                    || original.getFragment() != null || path == null || path.length() > 1024
+                    || !path.matches("/[A-Za-z0-9._/-]+") || path.contains("//")
+                    || path.equals("/.") || path.startsWith("/./") || path.contains("/../")
+                    || path.endsWith("/..") || path.endsWith("/.") || path.contains("/./")
+                    || basePath != null && !basePath.isBlank() && !"/".equals(basePath)
+                    && !path.startsWith(basePath.endsWith("/") ? basePath : basePath + "/")) {
+                log.error("COS media mapping address rejected, sourceHttps={}, cdnHttps={}, hostMatch={}, portMatch={}, pathSafe={}, queryFree={}",
+                        "https".equalsIgnoreCase(original.getScheme()), "https".equalsIgnoreCase(configured.getScheme()),
+                        Objects.equals(original.getHost(), configured.getHost()), original.getPort() == configured.getPort(),
+                        path != null && path.length() <= 1024 && path.matches("/[A-Za-z0-9._/-]+"),
+                        original.getRawQuery() == null);
+                return null;
+            }
+            return path;
+        } catch (RuntimeException ex) {
+            log.error("COS media mapping parse rejected, errorType={}", ex.getClass().getSimpleName());
+            return null;
         }
     }
 

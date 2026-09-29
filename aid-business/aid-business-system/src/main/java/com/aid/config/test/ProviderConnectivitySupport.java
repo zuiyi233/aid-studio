@@ -43,6 +43,9 @@ final class ProviderConnectivitySupport {
                 result.setDetail("未验证密钥或模型");
                 return result;
             }
+            if (ProbeHttpSupport.isHttpRedirect(snapshot)) {
+                return ProbeHttpSupport.gatewayOnlyForRedirect(snapshot);
+            }
             ProbeResult commonFailure = ProbeHttpSupport.classifyCommonFailure(snapshot);
             if (Objects.nonNull(commonFailure)) {
                 log.error("退化探活响应异常, provider={}, status={}", providerTag, response.getStatus());

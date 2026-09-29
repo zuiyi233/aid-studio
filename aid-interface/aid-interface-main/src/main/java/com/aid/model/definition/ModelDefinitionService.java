@@ -208,6 +208,17 @@ public class ModelDefinitionService {
                     && model.getCapabilities() == null) model.setCapabilities(requested);
         }
         if (model.getCapabilities() != null) {
+            // Imported routes may leave billingMode unset and inherit the model's mode.
+            // Preserve that contract when the administrator saves an unchanged model.
+            String inheritedBillingMode = model.getBillingMode() != null
+                    ? model.getBillingMode() : current == null ? null : current.getBillingMode();
+            for (var capability : model.getCapabilities()) {
+                if (capability.getBindings() == null) continue;
+                for (var route : capability.getBindings()) {
+                    if (route != null && route.getBillingMode() == null)
+                        route.setBillingMode(inheritedBillingMode);
+                }
+            }
             validate(model.getCapabilities());
             for (var alias : aliasesForModel(model.getId())) {
                 boolean retained = model.getCapabilities().stream().anyMatch(cap -> Objects.equals(cap.getCode(), alias.getCapabilityCode())
@@ -225,14 +236,16 @@ public class ModelDefinitionService {
                 AidAiModel priced = new AidAiModel();
                 if (current != null) BeanUtil.copyProperties(current, priced);
                 BeanUtil.copyProperties(model, priced, CopyOptions.create().setIgnoreNullValue(true));
-                priced.setBillingMode(route.getBillingMode());
-                priced.setBillingRuleJson(JSON.toJSONString(route.getBillingRule()));
-                priced.setCostCredits(route.getCostCredits());
+                // A route without its own price inherits the model-level rule.  Serializing a
+                // missing route rule as JSON null made an unchanged legacy model impossible to save.
+                if (route.getBillingMode() != null) priced.setBillingMode(route.getBillingMode());
+                if (route.getBillingRule() != null) priced.setBillingRuleJson(JSON.toJSONString(route.getBillingRule()));
+                if (route.getCostCredits() != null) priced.setCostCredits(route.getCostCredits());
                 if (!Boolean.TRUE.equals(route.getEnabled()) || !Boolean.TRUE.equals(capability.getEnabled())) priced.setStatus("1");
                 ModelBillingRuleValidator.validate(priced);
                 if (Boolean.TRUE.equals(route.getEnabled()) && Boolean.TRUE.equals(capability.getEnabled())
                         && "0".equals(priced.getStatus()) && !Boolean.TRUE.equals(priced.getIsFree())
-                        && !"SKU".equals(route.getBillingMode()) && (route.getCostCredits() == null || route.getCostCredits().signum() < 0)) fail("请配置能力价格");
+                        && !"SKU".equals(priced.getBillingMode()) && (priced.getCostCredits() == null || priced.getCostCredits().signum() < 0)) fail("请配置能力价格");
             }
         }
         List<ModelCapabilityDefinition> overviewDefinitions = model.getCapabilities() != null

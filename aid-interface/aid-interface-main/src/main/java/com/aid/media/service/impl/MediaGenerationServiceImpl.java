@@ -67,7 +67,7 @@ import com.aid.media.provider.ImageOutputItem;
 import com.aid.media.provider.KlingVideoRequestBuilder;
 import com.aid.media.provider.MinimaxH3VideoRequestBuilder;
 import com.aid.media.provider.DmcH3VideoRequestBuilder;
-import com.aid.media.provider.impl.DmcH3VideoProviderClient.SubmissionOutcomeUnknownException;
+import com.aid.media.provider.ProviderSubmissionOutcomeUnknownException;
 import com.aid.media.provider.ProviderSubmitResult;
 import com.aid.media.provider.ProviderErrorSanitizer;
 import com.aid.media.provider.ProviderUsageSupport;
@@ -358,12 +358,13 @@ public class MediaGenerationServiceImpl implements IMediaGenerationService, Medi
         validatePromptForModel(modelConfig, request.getPrompt());
         ModelCapabilityValidator.validatePrompt(modelConfig, request.getPrompt());
         // 先解析权属与已有元数据；数量及模态通过后再统一探测，避免非法请求触发大量下载。
-        resolveReferenceVideoRecords(request, verifyMetadata);
+        VideoProviderClient videoClient = resolveVideoClient(request.getModelName(), modelConfig);
+        resolveReferenceVideoRecords(request,
+                verifyMetadata || videoClient.requiresVerifiedMetadataForQuote());
         validateVideoProviderContract(modelConfig, request);
         ModelInputCapabilityValidator.validateRawVideoInputs(modelConfig, request);
         Wan3VideoRequestBuilder.validateRawInputs(modelConfig, request);
         AgnesVideo25RequestBuilder.validateRawInputs(modelConfig, request);
-        VideoProviderClient videoClient = resolveVideoClient(request.getModelName(), modelConfig);
         videoClient.normalizeRequest(modelConfig, request);
         ReferenceMediaRequestNormalizer.normalize(modelConfig, request,
                 videoClient.fallbackMaxReferenceImages(modelConfig),
@@ -403,12 +404,12 @@ public class MediaGenerationServiceImpl implements IMediaGenerationService, Medi
         }
         AiModelConfigVo modelConfig = invocationResolver.select(resolveModel(request.getModelName(), MediaType.VIDEO), request.getCapabilityCode());
         invocationResolver.normalizePlannedPrompt(modelConfig, request);
-        resolveReferenceVideoRecords(request, false);
+        VideoProviderClient videoClient = resolveVideoClient(request.getModelName(), modelConfig);
+        resolveReferenceVideoRecords(request, videoClient.requiresVerifiedMetadataForQuote());
         validateVideoProviderContract(modelConfig, request);
         ModelInputCapabilityValidator.validateRawVideoInputs(modelConfig, request);
         Wan3VideoRequestBuilder.validateRawInputs(modelConfig, request);
         AgnesVideo25RequestBuilder.validateRawInputs(modelConfig, request);
-        VideoProviderClient videoClient = resolveVideoClient(request.getModelName(), modelConfig);
         videoClient.normalizeRequest(modelConfig, request);
         ReferenceMediaRequestNormalizer.normalize(modelConfig, request,
                 videoClient.fallbackMaxReferenceImages(modelConfig),
@@ -504,6 +505,10 @@ public class MediaGenerationServiceImpl implements IMediaGenerationService, Medi
         voiceReferenceSampleService.prepare(modelConfig, request, verifyMetadata);
         if (verifyMetadata) verifiedMediaInputService.configured(modelConfig, request);
         com.aid.media.util.AudioModelCapabilityValidator.validate(modelConfig, request);
+        if (com.aid.media.provider.impl.MinimaxMusicProviderClient.PROTOCOL
+                .equalsIgnoreCase(StrUtil.trim(modelConfig.getProtocol()))) {
+            com.aid.media.provider.impl.MinimaxMusicProviderClient.buildBody(modelConfig, request);
+        }
         if (request.getExpectedModelConfigurationHash() != null
                 && !request.getExpectedModelConfigurationHash().equals(com.aid.model.ModelConfigurationFingerprint.of(modelConfig))) {
             throw new ServiceException("配置已变请重报价");
@@ -855,9 +860,13 @@ public class MediaGenerationServiceImpl implements IMediaGenerationService, Medi
                 return byCode.get(0);
             }
             if (byCode.size() > 1) {
-                log.error("resolveAudioClient providerCode 命中多个 provider: providerCode={}, count={}",
-                        providerCode, byCode.size());
-                throw new ServiceException("系统繁忙");
+                List<com.aid.media.provider.AudioProviderClient> byProtocol = byCode.stream()
+                        .filter(it -> it.supportsProtocol(modelConfig.getProtocol()))
+                        .toList();
+                if (byProtocol.size() == 1) return byProtocol.get(0);
+                log.error("resolveAudioClient providerCode/protocol 路由不唯一: providerCode={}, protocol={}, count={}",
+                        providerCode, modelConfig.getProtocol(), byProtocol.size());
+                throw new ServiceException("音频协议不可用");
             }
             // 0 个命中：providerCode 不被任何 client 识别，降级到下一级
             log.info("resolveAudioClient providerCode 未命中任何 client，降级: providerCode={}", providerCode);
@@ -874,9 +883,13 @@ public class MediaGenerationServiceImpl implements IMediaGenerationService, Medi
                 return byCapability.get(0);
             }
             if (byCapability.size() > 1) {
-                log.error("resolveAudioClient capability_json.provider 命中多个 provider: capabilityProvider={}, count={}",
-                        capabilityProvider, byCapability.size());
-                throw new ServiceException("系统繁忙");
+                List<com.aid.media.provider.AudioProviderClient> byProtocol = byCapability.stream()
+                        .filter(it -> it.supportsProtocol(modelConfig.getProtocol()))
+                        .toList();
+                if (byProtocol.size() == 1) return byProtocol.get(0);
+                log.error("resolveAudioClient capability_json.provider/protocol 路由不唯一: capabilityProvider={}, protocol={}, count={}",
+                        capabilityProvider, modelConfig.getProtocol(), byProtocol.size());
+                throw new ServiceException("音频协议不可用");
             }
             log.info("resolveAudioClient capability_json.provider 未命中任何 client，降级: capabilityProvider={}",
                     capabilityProvider);
@@ -2658,6 +2671,11 @@ public class MediaGenerationServiceImpl implements IMediaGenerationService, Medi
                 persistProtectedImageResults(task, editRequest);
                 return;
             }
+            if (MediaType.IMAGE.name().equals(task.getMediaType())
+                    && selectOrderedTaskResults(task.getId()).size() > 1) {
+                persistOrderedImageResults(task);
+                return;
+            }
             //    单次失败直接放弃会让业务层 resolveImageUrl 抛"存储失败"；同步重试可消除大多数瞬时抖动。
             byte[] bytes = downloadOriginBytesWithRetry(task);
             String suffix = detectSuffix(task.getOriginUrl(), task);
@@ -3358,6 +3376,11 @@ public class MediaGenerationServiceImpl implements IMediaGenerationService, Medi
     /** 执行视频 Provider 契约校验。 */
     static void validateVideoProviderContract(AiModelConfigVo modelConfig,
                                                MediaVideoGenerateRequest request) {
+        if (modelConfig != null
+            && MinimaxH3Constants.PROTOCOL_VIDEO.equalsIgnoreCase(StrUtil.trim(modelConfig.getProtocol()))) {
+            MinimaxH3VideoRequestBuilder.buildSubmissionBodyForValidation(modelConfig, request);
+            return;
+        }
         String internalAspectRatio = request == null ? null : request.getAspectRatio();
         boolean followInput = request != null
                 && ModelCapabilityResolver.isVideoAspectRatioFollowInput(modelConfig);
@@ -3368,11 +3391,6 @@ public class MediaGenerationServiceImpl implements IMediaGenerationService, Medi
             if (modelConfig != null
                 && KlingConstants.PROVIDER_CODE.equalsIgnoreCase(StrUtil.trim(modelConfig.getProviderCode()))) {
                 KlingVideoRequestBuilder.validateFullRequest(modelConfig, request);
-                return;
-            }
-            if (modelConfig != null
-                && MinimaxH3Constants.PROTOCOL_VIDEO.equalsIgnoreCase(StrUtil.trim(modelConfig.getProtocol()))) {
-                MinimaxH3VideoRequestBuilder.buildSubmissionBodyForValidation(modelConfig, request);
                 return;
             }
             if (modelConfig != null
@@ -4466,12 +4484,20 @@ public class MediaGenerationServiceImpl implements IMediaGenerationService, Medi
                 submitResult = client.submit(modelConfig, imgReq);
             } else if (Objects.equals(task.getMediaType(), MediaType.VIDEO.name())) {
                 MediaVideoGenerateRequest vidReq = JSONUtil.toBean(task.getRequestJson(), MediaVideoGenerateRequest.class);
-                if (("tokendance".equalsIgnoreCase(modelConfig.getProviderCode())
-                        || DmcH3VideoRequestBuilder.PROTOCOL.equalsIgnoreCase(modelConfig.getProtocol()))
-                        && vidReq.getReferenceVideoRecordIds() != null && !vidReq.getReferenceVideoRecordIds().isEmpty()) {
+                if (vidReq.getReferenceVideoRecordIds() != null
+                        && !vidReq.getReferenceVideoRecordIds().isEmpty()) {
                     // 内部可信 DTO 不写任务 JSON；队列拉起后按任务归属重建，不能把裸 URL 当已核验素材。
                     vidReq.setUserId(task.getUserId());
                     vidReq.setProjectId(task.getProjectId());
+                    // 任务快照中的 referenceVideos 是首次权属解析生成的 URL。对象签名可能在
+                    // 排队期间过期或变化；重放时必须按记录 ID 重新生成，不能把旧签名当用户输入校验。
+                    if (vidReq.getOptions() != null) {
+                        Map<String, Object> replayOptions = new LinkedHashMap<>(vidReq.getOptions());
+                        replayOptions.remove("referenceVideos");
+                        replayOptions.remove("referenceVideoDurations");
+                        replayOptions.remove("referenceVideoSeconds");
+                        vidReq.setOptions(replayOptions);
+                    }
                     referenceVideoRecordResolver.resolveAndApply(vidReq, task.getUserId(), true);
                     ModelInputCapabilityValidator.validateVideo(modelConfig, vidReq);
                 }
@@ -4480,11 +4506,16 @@ public class MediaGenerationServiceImpl implements IMediaGenerationService, Medi
                     // 归一化后的临时 URL 必须先持久化，应用重启后仍可继续提交并在终态清理。
                     requiresNewTxTemplate.executeWithoutResult(s -> updateTaskWithPayloadArchive(task));
                 }
-                modelOutboundResourcePreparer.prepare(modelConfig, vidReq);
                 VideoProviderClient client = resolveVideoClient(vidReq.getModelName(), modelConfig);
-                if ("dmc-h3-video".equalsIgnoreCase(modelConfig.getProtocol())) {
-                    vidReq.setProviderIdempotencyKey("aid-dmc-" + task.getId());
+                if (client.requiresVerifiedMetadataForQuote()) {
+                    // Task JSON does not persist resolvedReferenceVideos. Rebuild cost inputs from
+                    // the newly authorized source before an asynchronous upstream submission.
+                    client.normalizeRequest(modelConfig, vidReq);
                 }
+                modelOutboundResourcePreparer.prepare(modelConfig, vidReq);
+                vidReq.setProviderIdempotencyKey(
+                        "dmc-h3-video".equalsIgnoreCase(modelConfig.getProtocol())
+                                ? "aid-dmc-" + task.getId() : "aid-media-" + task.getId());
                 submitResult = client.submit(modelConfig, vidReq);
             } else if (Objects.equals(task.getMediaType(), MediaType.AUDIO.name())) {
                 com.aid.media.dto.MediaAudioGenerateRequest audioReq =
@@ -4559,11 +4590,11 @@ public class MediaGenerationServiceImpl implements IMediaGenerationService, Medi
                 cleanupNormalizedVideoInputs(task);
                 publishTextTaskCompletedSafely(task);
             }
-        } catch (SubmissionOutcomeUnknownException ex) {
+        } catch (ProviderSubmissionOutcomeUnknownException ex) {
             // POST 可能已被上游接受；冻结款和并发占用保持原状，等待人工核对。
-            task.setErrorMessage("DMC 提交结果待核对");
+            task.setErrorMessage("上游提交结果待核对");
             requiresNewTxTemplate.executeWithoutResult(s -> updateTaskWithPayloadArchive(task));
-            log.error("DMC 提交结果未知，保留 PENDING, taskId={}", task.getId());
+            log.error("上游提交结果未知，保留 PENDING, taskId={}", task.getId());
         } catch (Exception ex) {
             long submitElapsedMs = System.currentTimeMillis() - submitStartMs;
             boolean textTask = MediaType.TEXT.name().equals(task.getMediaType());
@@ -5203,6 +5234,51 @@ public class MediaGenerationServiceImpl implements IMediaGenerationService, Medi
         }
         task.setOssUrl(results.get(0).getOssUrl());
         task.setErrorMessage(null);
+    }
+
+    /** 多图任务逐张转存。主任务 OSS 地址仅在全部结果就绪后写入，沿用已有补偿索引。 */
+    private void persistOrderedImageResults(AidMediaTask task) {
+        org.redisson.api.RLock lock = redissonClient == null ? null
+                : redissonClient.getLock("aid:media:image-results:persist:" + task.getId());
+        boolean locked = lock == null;
+        try {
+            if (lock != null) {
+                locked = lock.tryLock();
+                if (!locked) return;
+            }
+            List<AidMediaResult> results = selectOrderedTaskResults(task.getId());
+            for (AidMediaResult result : results) {
+                if (StringUtils.isNotBlank(result.getOssUrl())) continue;
+                if (StringUtils.isBlank(result.getOriginUrl())) throw new ServiceException("图片结果地址缺失");
+                byte[] bytes = downloadOriginBytesWithRetry(task, result.getOriginUrl());
+                String suffix = detectSuffix(result.getOriginUrl(), task);
+                String contentType = resolveContentType(task, suffix);
+                UploadResult upload;
+                try {
+                    upload = OssFactory.instance().uploadSuffix(bytes, suffix, contentType);
+                } catch (java.io.IOException ex) {
+                    throw new ServiceException("图片结果保存失败");
+                }
+                LambdaUpdateWrapper<AidMediaResult> update = new LambdaUpdateWrapper<>();
+                update.eq(AidMediaResult::getId, result.getId());
+                update.isNull(AidMediaResult::getOssUrl);
+                update.set(AidMediaResult::getOssUrl, upload.getUrl());
+                update.set(AidMediaResult::getMimeType, contentType);
+                update.set(AidMediaResult::getFileSize, (long) bytes.length);
+                update.set(AidMediaResult::getUpdateBy,
+                        task.getUserId() == null ? "" : String.valueOf(task.getUserId()));
+                update.set(AidMediaResult::getUpdateTime, new Date());
+                aidMediaResultMapper.update(null, update);
+            }
+            results = selectOrderedTaskResults(task.getId());
+            if (results.isEmpty() || results.stream().anyMatch(value -> StringUtils.isBlank(value.getOssUrl()))) {
+                throw new ServiceException("图片结果仍在持久化");
+            }
+            task.setOssUrl(results.get(0).getOssUrl());
+            task.setErrorMessage(null);
+        } finally {
+            if (lock != null && locked && lock.isHeldByCurrentThread()) lock.unlock();
+        }
     }
 
     private List<AidMediaResult> selectOrderedTaskResults(Long taskId) {

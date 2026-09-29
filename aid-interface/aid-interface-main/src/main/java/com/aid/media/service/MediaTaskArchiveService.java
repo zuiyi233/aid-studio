@@ -266,7 +266,8 @@ public class MediaTaskArchiveService {
 
     private boolean isTerminal(String status) {
         return Objects.equals(status, MediaTaskStatus.SUCCEEDED.name())
-            || Objects.equals(status, MediaTaskStatus.FAILED.name());
+            || Objects.equals(status, MediaTaskStatus.FAILED.name())
+            || Objects.equals(status, MediaTaskStatus.CANCELLED.name());
     }
 
     private void writeArchiveRecord(ArchiveRecord archiveRecord) {

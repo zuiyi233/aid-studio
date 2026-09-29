@@ -14,4 +14,7 @@ public class CancelTaskRequest
     /** 要取消的任务ID */
     @NotNull(message = "任务ID不能为空")
     private Long taskId;
+
+    /** EXTRACT（默认，兼容原接口）或 MEDIA（图片/视频媒体任务）。 */
+    private String taskSource;
 }

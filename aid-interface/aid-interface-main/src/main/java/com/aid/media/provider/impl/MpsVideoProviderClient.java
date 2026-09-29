@@ -16,8 +16,6 @@ import com.aid.compose.config.MpsConfigManager;
 import com.aid.compose.config.MpsProperties;
 import com.aid.compose.exception.ComposeUpstreamUnavailableException;
 import com.aid.common.moderation.tencent.TencentCloudTc3Signer;
-import com.aid.common.aid.oss.config.OssConfigManager;
-import com.aid.common.aid.oss.properties.OssProperties;
 import com.aid.domain.vo.AiModelConfigVo;
 import com.aid.media.dto.MediaVideoGenerateRequest;
 import com.aid.media.enums.MediaTaskStatus;
@@ -82,7 +80,9 @@ public class MpsVideoProviderClient implements VideoProviderClient {
 
     /** MPS 配置管理器 */
     private final MpsConfigManager mpsConfigManager;
-    private final OssConfigManager ossConfigManager;
+    private final com.aid.common.tencent.media.TencentMediaCosConfigManager mediaCosConfigManager;
+    private final TencentCiCosMediaGateway mediaGateway;
+    private final MediaTaskFileRegistry taskFiles;
 
     @Override
     public String protocol() {
@@ -251,15 +251,15 @@ public class MpsVideoProviderClient implements VideoProviderClient {
 
     /** 排队期间若管理员切换了存储桶，拒绝把旧任务继续输出到原 COS。 */
     private void validateOutputOwnership(JSONObject submitBody) {
-        OssProperties current = ossConfigManager.getOssProperties();
+        var current = mediaCosConfigManager.forMps();
         JSONObject output = submitBody == null ? null : submitBody.getJSONObject("OutputStorage");
         JSONObject cos = output == null ? null : output.getJSONObject("CosOutputStorage");
-        if (current == null || !"cos".equalsIgnoreCase(current.getUploadMode()) || cos == null
-                || !StrUtil.equals(cos.getString("Bucket"), current.getCosBucketName())
-                || !StrUtil.equalsIgnoreCase(cos.getString("Region"), current.getCosRegion())) {
+        if (current == null || !current.configured() || cos == null
+                || !StrUtil.equals(cos.getString("Bucket"), current.bucketName())
+                || !StrUtil.equalsIgnoreCase(cos.getString("Region"), current.region())) {
             log.error("MPS输出存储归属已变化, currentMode={}, currentBucket={}, requestBucket={}",
-                    current == null ? null : current.getUploadMode(),
-                    current == null ? null : current.getCosBucketName(),
+                    current == null ? null : current.legacy(),
+                    current == null ? null : current.bucketName(),
                     cos == null ? null : cos.getString("Bucket"));
             throw new IllegalStateException("存储已变更");
         }
@@ -354,6 +354,30 @@ public class MpsVideoProviderClient implements VideoProviderClient {
                         .terminalConfirmed(Boolean.TRUE)
                         .build();
             }
+            try (TencentCiCosMediaGateway.Session session = mediaGateway.openForMps()) {
+                String objectKey = URI.create(resultUrl).getPath().substring(1);
+                if (!objectKey.endsWith(".mp4")) return unknownStoredResult(raw, mpsStatus);
+                String token = providerTaskId.length() <= 64 ? providerTaskId :
+                        java.util.UUID.nameUUIDFromBytes(providerTaskId.getBytes(java.nio.charset.StandardCharsets.UTF_8))
+                                .toString().replace("-", "");
+                taskFiles.register(taskFiles.taskIdForProviderTask(providerTaskId), token,
+                        "OUTPUT_0", session.region(), session.bucket(), objectKey,
+                        session.outputRequiresTransfer());
+                MediaTaskFileRegistry.StoredOutput existing = taskFiles.storedOutput(token, "OUTPUT_0");
+                TencentCiCosMediaGateway.PersistedResult stored = existing == null
+                        ? session.persistOutput(objectKey, "mp4", "video/mp4")
+                        : new TencentCiCosMediaGateway.PersistedResult(
+                                existing.url(), existing.contentType(), existing.fileSize());
+                if (existing == null) taskFiles.storedOutput(token, "OUTPUT_0",
+                        stored.url(), stored.contentType(), stored.fileSize());
+                builder.persistedResultUrls(List.of(stored.url()))
+                        .persistedResultMimeTypes(List.of(stored.contentType()))
+                        .persistedResultFileSizes(List.of(stored.fileSize()));
+            } catch (RuntimeException ex) {
+                log.warn("MPS 成片永久存储待重试, providerTaskId={}, errorType={}",
+                        providerTaskId, ex.getClass().getSimpleName());
+                return unknownStoredResult(raw, mpsStatus);
+            }
         } else if (MediaTaskStatus.FAILED.name().equals(normalized)) {
             String err = StrUtil.isNotBlank(message) ? message : ("ErrCode=" + errCode);
             builder.errorMessage(err);
@@ -361,16 +385,22 @@ public class MpsVideoProviderClient implements VideoProviderClient {
         return builder.build();
     }
 
+    private ProviderTaskResult unknownStoredResult(String raw, String mpsStatus) {
+        return ProviderTaskResult.builder().status(MediaTaskStatus.PROCESSING.name())
+                .providerStatus(mpsStatus).errorMessage("成片保存中，请稍后")
+                .rawResponse(raw).querySuccessful(Boolean.TRUE).terminalConfirmed(Boolean.FALSE).build();
+    }
+
     /** 成片必须仍属于后台当前 COS；在途任务期间存储归属变更会被保存接口阻止。 */
     private boolean isOwnedCosUrl(String value) {
         try {
-            OssProperties storage = ossConfigManager.getOssProperties();
-            if (storage == null || !"cos".equalsIgnoreCase(storage.getUploadMode())) {
+            var storage = mediaCosConfigManager.forMps();
+            if (storage == null || !storage.configured()) {
                 return false;
             }
             URI uri = URI.create(value);
-            String expectedHost = storage.getCosBucketName() + ".cos."
-                    + storage.getCosRegion() + ".myqcloud.com";
+            String expectedHost = storage.bucketName() + ".cos."
+                    + storage.region() + ".myqcloud.com";
             return StrUtil.equalsIgnoreCase(uri.getHost(), expectedHost)
                     && StrUtil.isNotBlank(uri.getPath()) && !"/".equals(uri.getPath());
         } catch (Exception e) {
@@ -443,18 +473,24 @@ public class MpsVideoProviderClient implements VideoProviderClient {
                 region = cos.getString("Region");
             }
         }
-        OssProperties storageProps = ossConfigManager.getOssProperties();
+        var storageProps = mediaCosConfigManager.forMps();
         if (StrUtil.isBlank(bucket)) {
-            bucket = storageProps.getCosBucketName();
+            bucket = storageProps.bucketName();
         }
         if (StrUtil.isBlank(region)) {
-            region = storageProps.getCosRegion();
+            region = storageProps.region();
         }
         if (StrUtil.isBlank(bucket) || StrUtil.isBlank(region)) {
             return null;
         }
         String normalizedPath = path.startsWith("/") ? path.substring(1) : path;
-        return "https://" + bucket + ".cos." + region + ".myqcloud.com/" + normalizedPath;
+        if (!normalizedPath.matches("[A-Za-z0-9_./-]{1,1024}") || normalizedPath.contains("..")
+                || normalizedPath.contains("//")) return null;
+        var configured = mediaCosConfigManager.forMps();
+        if (!bucket.equals(configured.bucketName()) || !region.equals(configured.region())) return null;
+        try (TencentCiCosMediaGateway.Session session = mediaGateway.openForMps()) {
+            return session.signedReadUrl(normalizedPath);
+        }
     }
 
     /**

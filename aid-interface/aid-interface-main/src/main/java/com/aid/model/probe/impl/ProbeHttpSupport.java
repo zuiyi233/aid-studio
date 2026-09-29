@@ -28,6 +28,7 @@ public final class ProbeHttpSupport {
     private static final int DETAIL_BODY_MAX_LEN = 500;
     private static final int HTTP_OK_MIN = 200;
     private static final int HTTP_OK_MAX_EXCLUSIVE = 300;
+    private static final int HTTP_REDIRECT_MAX_EXCLUSIVE = 400;
     private static final int HTTP_UNAUTHORIZED = 401;
     private static final int HTTP_FORBIDDEN = 403;
     private static final int HTTP_NOT_FOUND = 404;
@@ -216,6 +217,19 @@ public final class ProbeHttpSupport {
      */
     public static boolean isHttpSuccess(ProbeHttpResponse response) {
         return response.status() >= HTTP_OK_MIN && response.status() < HTTP_OK_MAX_EXCLUSIVE;
+    }
+
+    /** 判断响应状态是否属于 HTTP 3xx 重定向范围。 */
+    public static boolean isHttpRedirect(ProbeHttpResponse response) {
+        return response.status() >= HTTP_OK_MAX_EXCLUSIVE
+                && response.status() < HTTP_REDIRECT_MAX_EXCLUSIVE;
+    }
+
+    /** 构造只确认网关可达且不代表密钥或模型有效的重定向结果。 */
+    public static ProbeResult gatewayOnlyForRedirect(ProbeHttpResponse response) {
+        ProbeResult result = ProbeResult.ok("仅网关可达");
+        result.setDetail("网关根路径返回 HTTP " + response.status() + " 重定向，未验证密钥或模型");
+        return result;
     }
 
     /**

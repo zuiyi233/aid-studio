@@ -54,6 +54,11 @@ public final class MinimaxH3VideoRequestBuilder {
         if (config == null || request == null) {
             throw rejected("missing model config or video request", "视频参数不能为空");
         }
+        if (Boolean.TRUE.equals(request.getAudio()) || Boolean.TRUE.equals(option(request, "generate_audio"))
+            || request.getBgm() != null
+            || StrUtil.isNotBlank(request.getAudioType()) || StrUtil.isNotBlank(request.getVoiceId())) {
+            throw rejected("unsupported video audio output control", "该模型不支持音画生成控制参数");
+        }
         Scene scene = requireScene(config);
         String prompt = StrUtil.trim(submissionPrompt);
         if (StrUtil.isBlank(prompt)) {
@@ -73,11 +78,12 @@ public final class MinimaxH3VideoRequestBuilder {
             case REFERENCE -> addReferences(config, request, content);
         }
 
-        String resolution = resolution(request);
-        int duration = duration(request);
+        String realModel = realModel(config);
+        String resolution = resolution(request, realModel);
+        int duration = duration(request, realModel);
         String ratio = ratio(request, scene);
         Map<String, Object> body = new LinkedHashMap<>();
-        body.put("model", MinimaxH3Constants.REAL_MODEL_CODE);
+        body.put("model", realModel);
         body.put("content", content);
         body.put("resolution", resolution);
         body.put("duration", duration);
@@ -87,10 +93,35 @@ public final class MinimaxH3VideoRequestBuilder {
             body.put("callback_url", callbackUrl);
         }
         Object watermark = option(request, "aigc_watermark", "aigcWatermark");
-        if (watermark instanceof Boolean value) {
+        if (watermark != null) {
+            if (!(watermark instanceof Boolean value)) {
+                throw rejected("watermark must be boolean", "水印参数无效");
+            }
             body.put("aigc_watermark", value);
         }
+        Object expansion = option(request, "promptExpansionMode", "prompt_expansion_mode");
+        if (expansion != null) {
+            if (!MinimaxH3Constants.REAL_MODEL_CODE_MAX.equals(realModel)
+                || !(expansion instanceof String mode)
+                || !List.of("disabled", "balanced", "quality").contains(mode)) {
+                throw rejected("unsupported prompt expansion mode", "扩写模式不支持");
+            }
+            body.put("extra", Map.of("prompt_expansion_mode", expansion));
+        }
         return body;
+    }
+
+    private static String realModel(AiModelConfigVo config) {
+        String value = StrUtil.trim(config.getRealModelCode());
+        if (StrUtil.isBlank(value) && MinimaxH3Constants.MODEL_CODES.contains(config.getModelCode())
+            && !MinimaxH3Constants.MODEL_MAX_OFFICIAL.equals(config.getModelCode())) {
+            value = MinimaxH3Constants.REAL_MODEL_CODE;
+        }
+        if (!MinimaxH3Constants.REAL_MODEL_CODE.equals(value)
+            && !MinimaxH3Constants.REAL_MODEL_CODE_MAX.equals(value)) {
+            throw rejected("unsupported upstream model", "上游模型不支持");
+        }
+        return value;
     }
 
     private static String sanitizedPrompt(AiModelConfigVo config, MediaVideoGenerateRequest request) {
@@ -204,12 +235,20 @@ public final class MinimaxH3VideoRequestBuilder {
         }
         images.addAll(mediaUrls(option(request, OPTION_REFERENCE_IMAGES)));
         images.addAll(mediaUrls(option(request, OPTION_IMAGES)));
-        return ReferenceImageLimiter.limit(deduplicate(images), config, 9, "MiniMax H3");
+        images = deduplicate(images);
+        int maximum = Math.min(9, ReferenceImageLimiter.resolveMax(config, 9));
+        if (images.size() > maximum) {
+            throw rejected("reference image count exceeds " + maximum, "参考图片数量超限");
+        }
+        return images;
     }
 
     private static List<String> referenceVideos(MediaVideoGenerateRequest request) {
         List<String> videos = new ArrayList<>(mediaUrls(option(request, OPTION_REFERENCE_VIDEOS)));
-        videos.addAll(mediaUrls(option(request, OPTION_REFERENCE_VIDEO_URL)));
+        for (String key : List.of(OPTION_REFERENCE_VIDEO_URL, "featureVideoUrl", "baseVideoUrl",
+                "inputVideoUrl", "videoUrl", "video_url", "videos")) {
+            videos.addAll(mediaUrls(option(request, key)));
+        }
         videos = deduplicate(videos);
         if (videos.size() > 3) {
             throw rejected("reference video count exceeds 3, count=" + videos.size(), "参考视频最多三个");
@@ -219,16 +258,28 @@ public final class MinimaxH3VideoRequestBuilder {
 
     private static List<ReferenceAudioInput> referenceAudios(AiModelConfigVo config,
                                                               MediaVideoGenerateRequest request) {
-        List<ReferenceAudioInput> audios = ReferenceAudioLimiter.limit(
-            request.getReferenceAudios(), config, "MiniMax H3");
+        List<ReferenceAudioInput> audios = request.getReferenceAudios() == null
+            ? List.of() : request.getReferenceAudios();
+        int configuredMaximum = ReferenceAudioLimiter.readCapability(config).getMaxCount();
+        int maximum = configuredMaximum == -1 ? 3 : Math.min(3, Math.max(0, configuredMaximum));
         List<ReferenceAudioInput> valid = new ArrayList<>();
         for (ReferenceAudioInput audio : audios) {
-            if (audio != null && StrUtil.isNotBlank(audio.getSampleUrl())) {
-                valid.add(audio);
-                if (valid.size() == 3) {
-                    break;
-                }
+            if (audio == null) {
+                throw rejected("reference audio is null", "参考音频无效");
             }
+            if (StrUtil.isBlank(audio.getSampleUrl())) {
+                if (audio.isExplicit()) {
+                    throw rejected("explicit reference audio has no URL", "参考音频地址不能为空");
+                }
+                // 提示词自动推导的音色由统一音频校验器清理；不能阻断前置预估。
+                continue;
+            }
+            if (valid.stream().noneMatch(item -> item.getSampleUrl().trim().equals(audio.getSampleUrl().trim()))) {
+                valid.add(audio);
+            }
+        }
+        if (valid.size() > maximum) {
+            throw rejected("reference audio count exceeds " + maximum, "参考音频数量超限");
         }
         return valid;
     }
@@ -250,16 +301,18 @@ public final class MinimaxH3VideoRequestBuilder {
         }
     }
 
-    private static String resolution(MediaVideoGenerateRequest request) {
+    private static String resolution(MediaVideoGenerateRequest request, String realModel) {
         String value = optionText(request, "resolution", "size");
         value = StrUtil.isBlank(value) ? "768P" : value.trim().toUpperCase(Locale.ROOT);
-        if (!MinimaxH3Constants.RESOLUTIONS.contains(value)) {
+        boolean supported = MinimaxH3Constants.REAL_MODEL_CODE_MAX.equals(realModel)
+            ? List.of("480P", "768P").contains(value) : MinimaxH3Constants.RESOLUTIONS.contains(value);
+        if (!supported) {
             throw rejected("unsupported resolution=" + value, "分辨率不支持");
         }
         return value;
     }
 
-    private static int duration(MediaVideoGenerateRequest request) {
+    private static int duration(MediaVideoGenerateRequest request, String realModel) {
         Integer configured = request.getDurationSeconds();
         if (configured == null) {
             Object raw = option(request, "duration", "durationSeconds");
@@ -272,7 +325,8 @@ public final class MinimaxH3VideoRequestBuilder {
             }
         }
         int value = configured == null ? 5 : configured;
-        if (value < 4 || value > 15) {
+        int minimum = MinimaxH3Constants.REAL_MODEL_CODE_MAX.equals(realModel) ? 5 : 4;
+        if (value < minimum || value > 15) {
             throw rejected("duration is outside integer range [4,15], value=" + value, "视频时长范围错误");
         }
         return value;
@@ -281,6 +335,9 @@ public final class MinimaxH3VideoRequestBuilder {
     private static String ratio(MediaVideoGenerateRequest request, Scene scene) {
         String value = StrUtil.trim(request.getAspectRatio());
         if (scene == Scene.FIRST_FRAME || scene == Scene.LAST_FRAME || scene == Scene.FIRST_LAST_FRAME) {
+            if (StrUtil.isNotBlank(value) && !"adaptive".equals(value)) {
+                throw rejected("frame scene ignores explicit ratio=" + value, "首尾帧场景仅支持自适应比例");
+            }
             return "adaptive";
         }
         if (StrUtil.isBlank(value)) {
@@ -327,12 +384,15 @@ public final class MinimaxH3VideoRequestBuilder {
 
     @SuppressWarnings("unchecked")
     private static void addMediaUrl(List<String> result, Object value) {
-        if (value instanceof String text && StrUtil.isNotBlank(text)) {
+        if (value instanceof String text) {
+            if (StrUtil.isBlank(text)) {
+                throw rejected("blank reference media URL", "参考素材地址不能为空");
+            }
             result.add(text.trim());
             return;
         }
         if (!(value instanceof Map<?, ?> map)) {
-            return;
+            throw rejected("invalid reference media item", "参考素材格式无效");
         }
         Object url = map.get("url");
         if (url == null) {
@@ -344,9 +404,10 @@ public final class MinimaxH3VideoRequestBuilder {
                 }
             }
         }
-        if (url != null && StrUtil.isNotBlank(String.valueOf(url))) {
-            result.add(String.valueOf(url).trim());
+        if (!(url instanceof String text) || StrUtil.isBlank(text)) {
+            throw rejected("reference media item has no URL", "参考素材地址不能为空");
         }
+        result.add(text.trim());
     }
 
     private static List<String> deduplicate(List<String> values) {

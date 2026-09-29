@@ -3128,16 +3128,23 @@ export interface UserTaskDetailRequest {
 
 /** 停止/取消进行中的任务：POST /api/user/task/cancel（与后端约定，未上线时可能 404） */
 export interface UserTaskCancelRequest {
-  taskId: number
+  taskId: number | string
+  taskSource?: 'EXTRACT' | 'MEDIA'
 }
 
 /** 批量取消 PENDING 独立任务：POST /api/user/task/cancel-batch */
 export interface UserTaskCancelBatchRequest {
-  taskIds: number[]
+  taskIds: Array<number | string>
+  taskSource?: 'EXTRACT' | 'MEDIA'
 }
 
 export interface UserTaskCancelBatchData {
   cancelCount: number
+  alreadyCancelledCount?: number
+  runningCount?: number
+  finishedCount?: number
+  rejectedCount?: number
+  items?: Array<{ taskId: string; status: 'CANCELLED' | 'ALREADY_CANCELLED' | 'IN_PROGRESS' | 'FINISHED' | 'REJECTED' }>
 }
 
 /** 图片、视频、音频任务的统一预计进度与剩余时间。 */

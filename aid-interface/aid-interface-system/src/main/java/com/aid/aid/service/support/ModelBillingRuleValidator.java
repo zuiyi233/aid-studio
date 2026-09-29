@@ -16,7 +16,7 @@ public final class ModelBillingRuleValidator {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
     private static final Set<String> METER_TYPES = Set.of(
-            "TOKEN", "PER_IMAGE", "PER_SECOND", "SKU_PACKAGE", "PER_CHAR");
+            "TOKEN", "PER_IMAGE", "PER_SECOND", "PER_CREDIT", "SKU_PACKAGE", "PER_CHAR");
     private static final String CLIENT_MESSAGE = "计费规则无效";
 
     private ModelBillingRuleValidator() {
@@ -101,7 +101,9 @@ public final class ModelBillingRuleValidator {
                     boolean last = index == tiers.size() - 1;
                     if (!tier.isObject() || !nonNegative(price)
                             || price.decimalValue().compareTo(minimumEnabledImagePrice) > 0
-                            || (last ? !limit.isNull()
+                            // Fastjson omits a null map value when an unchanged rule is saved.
+                            // The final open-ended tier therefore accepts either null or absent.
+                            || (last ? !(limit.isNull() || limit.isMissingNode())
                             : !limit.isIntegralNumber() || !limit.canConvertToLong()
                             || limit.longValue() <= previousLimit)) {
                         reject(model, null, "输出像素档位需递增，末档无上限且价格不高于预冻结价");
@@ -119,7 +121,7 @@ public final class ModelBillingRuleValidator {
     private static boolean hasValidMainPrice(JsonNode sku, String meterType, boolean explicitMeterType) {
         return switch (meterType) {
             case "TOKEN" -> nonNegative(sku.get("inputPricePerMillion")) && nonNegative(sku.get("outputPricePerMillion"));
-            case "PER_IMAGE", "SKU_PACKAGE" -> nonNegative(sku.get("price"));
+            case "PER_IMAGE", "PER_CREDIT", "SKU_PACKAGE" -> nonNegative(sku.get("price"));
             case "PER_SECOND" -> nonNegative(sku.get("pricePerSecond"))
                     || (!explicitMeterType && positive(sku.get("price"))
                     && positive(sku.path("match").get("durationMax")));

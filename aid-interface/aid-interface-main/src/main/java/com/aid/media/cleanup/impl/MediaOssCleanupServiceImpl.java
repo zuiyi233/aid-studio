@@ -60,6 +60,9 @@ public class MediaOssCleanupServiceImpl implements IMediaOssCleanupService
     @Autowired
     private OssTemplate ossTemplate;
 
+    @Autowired
+    private com.aid.media.provider.impl.MediaTaskFileRegistry mediaTaskFileRegistry;
+
     /** 后台清理线程池。 */
     @Autowired
     private ThreadPoolTaskExecutor threadPoolTaskExecutor;
@@ -270,10 +273,11 @@ public class MediaOssCleanupServiceImpl implements IMediaOssCleanupService
     private Set<String> findStillReferencedTargets(Collection<String> targets)
     {
         Set<String> normalizedTargets = normalizeTargets(targets);
+        Set<String> protectedOriginals = mediaTaskFileRegistry.protectedOriginals(normalizedTargets);
         if (normalizedTargets.size() == 1)
         {
             String target = normalizedTargets.iterator().next();
-            return isStillReferenced(target) ? Set.of(target) : Set.of();
+            return protectedOriginals.contains(target) || isStillReferenced(target) ? Set.of(target) : Set.of();
         }
         Map<String, Set<String>> candidatesByTarget = new LinkedHashMap<>();
         Set<String> allCandidates = new LinkedHashSet<>();
@@ -285,6 +289,7 @@ public class MediaOssCleanupServiceImpl implements IMediaOssCleanupService
         }
         Set<String> referencedCandidates = loadReferencedCandidates(allCandidates);
         Set<String> referencedTargets = new LinkedHashSet<>();
+        referencedTargets.addAll(protectedOriginals);
         for (Map.Entry<String, Set<String>> entry : candidatesByTarget.entrySet())
         {
             if (entry.getValue().stream().anyMatch(referencedCandidates::contains))

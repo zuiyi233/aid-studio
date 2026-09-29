@@ -3,8 +3,10 @@ package com.aid.media.service.impl;
 import com.aid.common.error.TaskErrorResult;
 import com.aid.common.error.ErrorNormalizer;
 import com.aid.common.error.TaskErrorSnapshot;
+import com.aid.common.exception.ServiceException;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.aid.aid.domain.media.AidMediaResult;
 import com.aid.aid.domain.media.AidMediaTask;
 import com.aid.aid.mapper.AidMediaTaskMapper;
 import com.aid.aid.mapper.AidMediaResultMapper;
@@ -23,6 +25,11 @@ import com.aid.media.util.MediaTaskPayloadSanitizer;
 import com.aid.media.enums.MediaType;
 import com.aid.media.eta.MediaEtaRecorder;
 import com.aid.modelhealth.service.ModelHealthRecorder;
+import com.aid.domain.vo.AiModelConfigVo;
+import com.aid.model.definition.ModelTaskConfigurationResolver;
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONArray;
+import com.alibaba.fastjson2.JSONObject;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -38,6 +45,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * 统一终态处理：回调与轮询都走同一入口，CAS 抢终态处理权，幂等收口。
@@ -61,6 +69,9 @@ public class TaskCompletionServiceImpl implements TaskCompletionService {
     private final ModelHealthRecorder modelHealthRecorder;
     /** 可灵原始失败样本记录；内部完全隔离异常，不影响终态事务。 */
     private final KlingTerminalFailureRecorder klingTerminalFailureRecorder;
+
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private ModelTaskConfigurationResolver taskConfigurationResolver;
 
     /** ETA 成功样本旁路采集；字段注入保持既有测试构造器源兼容。 */
     @org.springframework.beans.factory.annotation.Autowired
@@ -126,6 +137,34 @@ public class TaskCompletionServiceImpl implements TaskCompletionService {
             return false;
         }
 
+        TencentStoredAudioResults tencentStoredAudio = null;
+        if (MediaTaskStatus.SUCCEEDED.name().equals(targetStatus)
+                && TENCENT_CI_PROTOCOL.equalsIgnoreCase(task.getProtocol())) {
+            try {
+                tencentStoredAudio = resolveTencentStoredAudioResults(task, taskResult);
+            } catch (RuntimeException ex) {
+                log.error("腾讯云数据万象成功结果未完成权威转存，保留任务继续对账, taskId={}, error={}",
+                        taskId, ex.getMessage());
+                return false;
+            }
+        }
+        TencentStoredVideoResult tencentStoredVideo = null;
+        if (MediaTaskStatus.SUCCEEDED.name().equals(targetStatus)
+                && tencentStoredAudio == null
+                && ((MediaType.VIDEO.name().equals(task.getMediaType())
+                    && (TENCENT_CI_PROTOCOL.equalsIgnoreCase(task.getProtocol())
+                        || "tencent-mps:subtitle-erase".equalsIgnoreCase(task.getProtocol())))
+                    || COMPOSE_MEDIA_TYPE.equals(task.getMediaType())
+                        && "tencent-mps".equalsIgnoreCase(task.getProtocol()))) {
+            try {
+                tencentStoredVideo = resolveTencentStoredVideoResult(taskResult);
+            } catch (RuntimeException ex) {
+                log.warn("腾讯云视频结果尚未持久化，继续等待任务对账, taskId={}, errorType={}",
+                        taskId, ex.getClass().getSimpleName());
+                return false;
+            }
+        }
+
         String userStr = task.getUserId() != null ? String.valueOf(task.getUserId()) : "";
         LambdaUpdateWrapper<AidMediaTask> casWrapper = new LambdaUpdateWrapper<>();
         casWrapper.eq(AidMediaTask::getId, taskId);
@@ -150,11 +189,17 @@ public class TaskCompletionServiceImpl implements TaskCompletionService {
 
         if (MediaTaskStatus.SUCCEEDED.name().equals(targetStatus)) {
             casWrapper.set(AidMediaTask::getOriginUrl, taskResult.getResultUrl());
+            if (tencentStoredAudio != null) {
+                casWrapper.set(AidMediaTask::getOssUrl, tencentStoredAudio.storedUrls().get(0));
+            }
+            if (tencentStoredVideo != null) {
+                casWrapper.set(AidMediaTask::getOssUrl, tencentStoredVideo.storedUrl());
+            }
             casWrapper.set(AidMediaTask::getErrorMessage, null);
             casWrapper.set(AidMediaTask::getErrorDetailJson, null);
             // COMPOSE 成片已由所选云引擎直接写入当前对象存储，或由本地 FFmpeg 上传到当前存储；
             // 随 origin_url 一并保存对象相对路径，避免后续再次下载转存。读取层统一按资源访问地址拼接。
-            if (COMPOSE_MEDIA_TYPE.equals(task.getMediaType())) {
+            if (COMPOSE_MEDIA_TYPE.equals(task.getMediaType()) && tencentStoredVideo == null) {
                 String composeOssUrl = resolveComposeOssRelativePath(taskResult.getResultUrl());
                 if (StrUtil.isNotBlank(composeOssUrl)) {
                     casWrapper.set(AidMediaTask::getOssUrl, composeOssUrl);
@@ -179,7 +224,14 @@ public class TaskCompletionServiceImpl implements TaskCompletionService {
             return false;
         }
         if (MediaTaskStatus.SUCCEEDED.name().equals(targetStatus)) {
-            persistResultManifest(task, normalizeResultUrls(taskResult), userStr);
+            if (tencentStoredAudio == null) {
+                persistResultManifest(task, normalizeResultUrls(taskResult), userStr);
+                if (tencentStoredVideo != null) {
+                    persistTencentStoredVideoManifest(task, tencentStoredVideo, userStr);
+                }
+            } else {
+                persistTencentStoredAudioManifest(task, tencentStoredAudio, userStr);
+            }
         }
         task.setTerminalTime(terminalTime);
         if (MediaTaskStatus.SUCCEEDED.name().equals(targetStatus) && mediaEtaRecorder != null) {
@@ -292,6 +344,130 @@ public class TaskCompletionServiceImpl implements TaskCompletionService {
         return new ArrayList<>(ordered);
     }
 
+    private static final String TENCENT_CI_PROTOCOL = "tencent-ci-async-media";
+
+    /** 服务端模型能力声明 AUDIO 输出时，要求 Provider 已完整转存全部有序结果。 */
+    private TencentStoredAudioResults resolveTencentStoredAudioResults(AidMediaTask task,
+                                                                        ProviderTaskResult taskResult) {
+        if (taskConfigurationResolver == null) {
+            throw new ServiceException("模型能力解析器不可用");
+        }
+        AiModelConfigVo config = taskConfigurationResolver.resolve(task);
+        if (config == null || !TENCENT_CI_PROTOCOL.equalsIgnoreCase(config.getProtocol())
+                || !"tencent_ci_media".equalsIgnoreCase(config.getProviderCode())) {
+            throw new ServiceException("任务模型路由不匹配");
+        }
+        JSONObject capability;
+        try {
+            capability = JSON.parseObject(config.getCapabilityJson());
+        } catch (RuntimeException ex) {
+            throw new ServiceException("模型输出能力配置无效");
+        }
+        JSONArray outputModalities = capability == null
+                ? null : capability.getJSONArray("outputModalities");
+        if (outputModalities == null || outputModalities.size() != 1) {
+            throw new ServiceException("模型输出能力配置缺失");
+        }
+        String outputModality = outputModalities.getString(0);
+        if ("VIDEO".equalsIgnoreCase(outputModality)) {
+            return null;
+        }
+        if (!"AUDIO".equalsIgnoreCase(outputModality)) {
+            throw new ServiceException("模型输出能力配置不受支持");
+        }
+        Integer expectedCount = capability.getInteger("maxOutputCount");
+        List<String> originUrls = normalizeResultUrls(taskResult);
+        List<String> storedUrls = taskResult.getPersistedResultUrls();
+        List<String> mimeTypes = taskResult.getPersistedResultMimeTypes();
+        List<Long> fileSizes = taskResult.getPersistedResultFileSizes();
+        int actualCount = originUrls.size();
+        if (expectedCount == null || expectedCount < 1 || expectedCount > 2
+                || actualCount < 1 || actualCount > expectedCount
+                || (taskResult.getResultCount() != null && taskResult.getResultCount() != actualCount)
+                || storedUrls == null || storedUrls.size() != actualCount
+                || mimeTypes == null || mimeTypes.size() != actualCount
+                || fileSizes == null || fileSizes.size() != actualCount
+                || new LinkedHashSet<>(storedUrls).size() != actualCount) {
+            throw new ServiceException("音频结果数量或转存清单不完整");
+        }
+        for (int index = 0; index < actualCount; index++) {
+            String storedUrl = StrUtil.trim(storedUrls.get(index));
+            String mimeType = StrUtil.trim(mimeTypes.get(index));
+            Long fileSize = fileSizes.get(index);
+            if (StrUtil.isBlank(storedUrl) || !storedUrl.startsWith("/") || storedUrl.startsWith("//")
+                    || storedUrl.contains("://") || storedUrl.contains("..") || storedUrl.contains("\\")
+                    || !Set.of("audio/aac", "audio/mp4", "audio/mpeg", "audio/flac", "audio/amr").contains(mimeType)
+                    || fileSize == null || fileSize <= 0L) {
+                throw new ServiceException("音频结果转存信息无效");
+            }
+        }
+        return new TencentStoredAudioResults(originUrls, List.copyOf(storedUrls),
+                List.copyOf(mimeTypes), List.copyOf(fileSizes));
+    }
+
+    private void persistTencentStoredAudioManifest(AidMediaTask task,
+                                                    TencentStoredAudioResults results,
+                                                    String operator) {
+        if (aidMediaResultMapper == null) {
+            throw new ServiceException("媒体结果存储不可用");
+        }
+        for (int index = 0; index < results.originUrls().size(); index++) {
+            aidMediaResultMapper.upsertTaskResult(task.getId(), index, MediaType.AUDIO.name(),
+                    results.originUrls().get(index), operator);
+            LambdaUpdateWrapper<AidMediaResult> update = new LambdaUpdateWrapper<>();
+            update.eq(AidMediaResult::getTaskId, task.getId());
+            update.eq(AidMediaResult::getResultIndex, index);
+            update.set(AidMediaResult::getMediaType, MediaType.AUDIO.name());
+            update.set(AidMediaResult::getOssUrl, results.storedUrls().get(index));
+            update.set(AidMediaResult::getMimeType, results.mimeTypes().get(index));
+            update.set(AidMediaResult::getFileSize, results.fileSizes().get(index));
+            update.set(AidMediaResult::getUpdateBy, operator);
+            update.set(AidMediaResult::getUpdateTime, new Date());
+            if (aidMediaResultMapper.update(null, update) != 1) {
+                throw new ServiceException("音频结果权威登记失败");
+            }
+        }
+    }
+
+    private record TencentStoredAudioResults(List<String> originUrls, List<String> storedUrls,
+                                             List<String> mimeTypes, List<Long> fileSizes) { }
+
+    private TencentStoredVideoResult resolveTencentStoredVideoResult(ProviderTaskResult result) {
+        List<String> stored = result.getPersistedResultUrls();
+        List<String> mime = result.getPersistedResultMimeTypes();
+        List<Long> sizes = result.getPersistedResultFileSizes();
+        if (stored == null || stored.size() != 1 || mime == null || mime.size() != 1
+                || sizes == null || sizes.size() != 1) {
+            throw new ServiceException("视频结果尚未完成永久存储");
+        }
+        String url = StrUtil.trim(stored.get(0));
+        if (StrUtil.isBlank(url) || !url.startsWith("/") || url.startsWith("//")
+                || url.contains("://") || url.contains("..") || url.contains("\\")
+                || !Set.of("video/mp4", "video/webm", "video/quicktime").contains(mime.get(0))
+                || sizes.get(0) == null || sizes.get(0) <= 0) {
+            throw new ServiceException("视频结果永久存储信息无效");
+        }
+        return new TencentStoredVideoResult(url, mime.get(0), sizes.get(0));
+    }
+
+    private void persistTencentStoredVideoManifest(AidMediaTask task, TencentStoredVideoResult result,
+                                                   String operator) {
+        if (aidMediaResultMapper == null) throw new ServiceException("媒体结果存储不可用");
+        LambdaUpdateWrapper<AidMediaResult> update = new LambdaUpdateWrapper<>();
+        update.eq(AidMediaResult::getTaskId, task.getId());
+        update.eq(AidMediaResult::getResultIndex, 0);
+        update.set(AidMediaResult::getOssUrl, result.storedUrl());
+        update.set(AidMediaResult::getMimeType, result.mimeType());
+        update.set(AidMediaResult::getFileSize, result.fileSize());
+        update.set(AidMediaResult::getUpdateBy, operator);
+        update.set(AidMediaResult::getUpdateTime, new Date());
+        if (aidMediaResultMapper.update(null, update) != 1) {
+            throw new ServiceException("视频结果权威登记失败");
+        }
+    }
+
+    private record TencentStoredVideoResult(String storedUrl, String mimeType, long fileSize) { }
+
     /**
      * 模型健康采集：COMPOSE 为合成服务（MPS）非 AI 模型，不计入；
      * 成功耗时 = 任务创建到终态收口（异步生成任务的端到端生成耗时）。
@@ -330,6 +506,9 @@ public class TaskCompletionServiceImpl implements TaskCompletionService {
         }
         if (Objects.equals(task.getMediaType(), MediaType.VIDEO.name())) {
             Map<String, Object> usage = new HashMap<>();
+            if (taskResult.getProviderCredits() != null && taskResult.getProviderCredits().signum() > 0) {
+                usage.put("actualProviderCredits", taskResult.getProviderCredits());
+            }
             if (Objects.nonNull(taskResult.getVideoDurationSeconds())
                     && taskResult.getVideoDurationSeconds() > 0) {
                 usage.put("actualDuration", taskResult.getVideoDurationSeconds());
@@ -610,6 +789,71 @@ public class TaskCompletionServiceImpl implements TaskCompletionService {
         registerAfterCommitReleaseForUnsubmitted(task, false);
         log.info("未提交媒体任务取消收口: taskId={}, billingWon={}", taskId, billingWon);
         return billingWon;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public String cancelQueuedUserTask(Long taskId, Long userId) {
+        if (taskId == null || taskId <= 0 || userId == null || userId <= 0) {
+            throw new ServiceException("任务参数错误");
+        }
+        AidMediaTask task = aidMediaTaskMapper.selectById(taskId);
+        if (task == null || !Objects.equals(task.getUserId(), userId)) {
+            throw new ServiceException("任务不存在或无权操作");
+        }
+        if (!MediaType.IMAGE.name().equals(task.getMediaType())
+                && !MediaType.VIDEO.name().equals(task.getMediaType())) {
+            throw new ServiceException("该媒体任务暂不支持取消");
+        }
+        if (!"GENERIC_GENERATION".equals(task.getBizTaskType())) {
+            throw new ServiceException("该媒体任务由原业务管理，请使用原任务取消入口");
+        }
+        String state = task.getStatus();
+        if (MediaTaskStatus.CANCELLED.name().equals(state)) return "ALREADY_CANCELLED";
+        if (!MediaTaskStatus.QUEUED.name().equals(state)) {
+            return MediaTaskStatus.SUCCEEDED.name().equals(state) || MediaTaskStatus.FAILED.name().equals(state)
+                    ? "FINISHED" : "IN_PROGRESS";
+        }
+        if (StrUtil.isNotBlank(task.getProviderTaskId()) || task.getUpstreamAcceptTime() != null) {
+            return "IN_PROGRESS";
+        }
+
+        String reason = "用户取消，尚未提交上游";
+        MediaTaskArchiveService.PreparedTerminalPayload payload =
+                mediaTaskArchiveService.prepareTerminalPayload(task, MediaTaskStatus.CANCELLED.name(), task.getResponseJson());
+        LambdaUpdateWrapper<AidMediaTask> update = new LambdaUpdateWrapper<>();
+        update.eq(AidMediaTask::getId, taskId)
+                .eq(AidMediaTask::getUserId, userId)
+                .eq(AidMediaTask::getStatus, MediaTaskStatus.QUEUED.name())
+                .and(w -> w.isNull(AidMediaTask::getProviderTaskId)
+                        .or().eq(AidMediaTask::getProviderTaskId, ""))
+                .isNull(AidMediaTask::getUpstreamAcceptTime);
+        update.set(AidMediaTask::getStatus, MediaTaskStatus.CANCELLED.name());
+        update.set(AidMediaTask::getTerminalTime, new Date());
+        update.set(AidMediaTask::getErrorMessage, reason);
+        update.set(AidMediaTask::getErrorDetailJson, null);
+        update.set(AidMediaTask::getRequestJson, payload.getRequestJson());
+        update.set(AidMediaTask::getResponseJson, payload.getResponseJson());
+        update.set(AidMediaTask::getUpdateBy, String.valueOf(userId));
+        update.set(AidMediaTask::getUpdateTime, new Date());
+        if (aidMediaTaskMapper.update(null, update) == 0) {
+            AidMediaTask current = aidMediaTaskMapper.selectById(taskId);
+            if (current != null && MediaTaskStatus.CANCELLED.name().equals(current.getStatus())) return "ALREADY_CANCELLED";
+            return current != null && (MediaTaskStatus.SUCCEEDED.name().equals(current.getStatus())
+                    || MediaTaskStatus.FAILED.name().equals(current.getStatus())) ? "FINISHED" : "IN_PROGRESS";
+        }
+        mediaTaskArchiveService.archiveAfterCommit(payload);
+        task = aidMediaTaskMapper.selectById(taskId);
+        boolean billingWon = billingFacadeService.refundBilling(task);
+        if (billingWon) {
+            aidMediaTaskMapper.update(null, new LambdaUpdateWrapper<AidMediaTask>()
+                    .eq(AidMediaTask::getId, taskId)
+                    .set(AidMediaTask::getBillingStatus, task.getBillingStatus())
+                    .set(AidMediaTask::getFrozenAmount, task.getFrozenAmount())
+                    .set(AidMediaTask::getUpdateTime, new Date()));
+        }
+        registerAfterCommitReleaseForUnsubmitted(task, false);
+        return "CANCELLED";
     }
 
     @Override

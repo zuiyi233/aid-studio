@@ -38,6 +38,9 @@ public interface TaskCompletionService {
      */
     boolean cancelQueuedTask(Long taskId, Long userId, String errorMessage);
 
+    /** 用户取消尚未提交供应商的图片/视频任务，返回 CANCELLED/ALREADY_CANCELLED/IN_PROGRESS/FINISHED。 */
+    String cancelQueuedUserTask(Long taskId, Long userId);
+
     /**
      * 合成提交结果无法确认或应用重启时，把已占槽但未产生上游任务号的任务延迟放回队列，
      * 不退款、不判失败；云端依靠幂等键恢复同一任务，本地重新执行。

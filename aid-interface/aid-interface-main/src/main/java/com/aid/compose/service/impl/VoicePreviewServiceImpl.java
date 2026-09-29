@@ -284,6 +284,13 @@ public class VoicePreviewServiceImpl implements VoicePreviewService {
             if (byCode.size() == 1) {
                 return byCode.get(0);
             }
+            if (byCode.size() > 1) {
+                List<AudioProviderClient> byProtocol = byCode.stream()
+                        .filter(it -> it.supportsProtocol(modelConfig.getProtocol()))
+                        .toList();
+                if (byProtocol.size() == 1) return byProtocol.get(0);
+                throw new com.aid.common.exception.ServiceException("音频协议不可用");
+            }
         }
         List<AudioProviderClient> byModel = audioProviderClients.stream()
                 .filter(it -> it.supportsModel(modelConfig.getModelCode()))

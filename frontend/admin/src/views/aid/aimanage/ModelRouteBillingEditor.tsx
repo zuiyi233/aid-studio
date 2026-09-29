@@ -53,7 +53,7 @@ export default function ModelRouteBillingEditor({ route, modelType, onChange }: 
             const fields: Array<{ field: keyof Sku; label: string }> = meter === 'TOKEN'
               ? [{ field: 'inputPricePerMillion', label: '输入 元/百万Token' }, { field: 'outputPricePerMillion', label: '输出 元/百万Token' }]
               : [{ field: meter === 'PER_SECOND' ? 'pricePerSecond' : meter === 'PER_CHAR' ? 'pricePerChar' : 'price',
-                label: meter === 'PER_SECOND' ? '元/秒' : meter === 'PER_CHAR' ? '元/字符' : meter === 'PER_IMAGE' ? '元/张' : '元/次' }];
+                label: meter === 'PER_SECOND' ? '元/秒' : meter === 'PER_CREDIT' ? '元/供应商积分' : meter === 'PER_CHAR' ? '元/字符' : meter === 'PER_IMAGE' ? '元/张' : '元/次' }];
             return <Space direction="vertical">{fields.map(({ field, label }) => <label key={field}>
               <span>{label} </span><InputNumber aria-label={`${sku.skuCode} ${label}`} min={0} precision={8} style={{ width: 150 }}
                 disabled={parsed.skuEditData.parseError} placeholder="未配置" value={sku[field] as number | null}

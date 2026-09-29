@@ -22,6 +22,7 @@ import com.aid.aid.controller.support.AiConfigJsonValidator;
 import com.aid.aid.service.IAidAiModelService;
 import com.aid.aid.service.IAidAiProviderService;
 import com.aid.media.service.ConcurrencyConfigValidator;
+import com.aid.media.provider.VideoProviderClient;
 import com.aid.model.service.IAiModelBusinessService;
 import com.aid.common.utils.poi.ExcelUtil;
 import com.aid.common.core.page.TableDataInfo;
@@ -41,6 +42,9 @@ public class AidAiModelController extends BaseController
 {
     @Autowired
     private IAidAiModelService aidAiModelService;
+
+    @Autowired
+    private List<VideoProviderClient> videoProviderClients;
 
     @Autowired
     private com.aid.newapi.NewApiService newApiService;
@@ -250,7 +254,7 @@ public class AidAiModelController extends BaseController
         checkBusinessBindingPermission(aidAiModel);
         // 写入前统一校验所有 JSON 列（billing_rule_json / capability_json / 调度策略 等），
         // 避免非 JSON 字符串污染计费 / 调度 / 能力解析链路
-        AiConfigJsonValidator.validate(aidAiModel, resolveProviderCode(aidAiModel));
+        validateModelConfiguration(aidAiModel);
         // 并发上限层级校验：模型上限不得超过所属供应商与全局上限
         concurrencyConfigValidator.validateModelSave(aidAiModel);
         AidAiProvider provider = aidAiProviderService.selectAidAiProviderById(aidAiModel.getProviderId());
@@ -286,7 +290,7 @@ public class AidAiModelController extends BaseController
         effective.setBillingRuleJson(com.aid.aid.service.support.ModelConfigurationMerge.merge(
                 current.getBillingRuleJson(), aidAiModel.getBillingRuleJson()));
         if (aidAiModel.getModelCode() == null) aidAiModel.setModelCode(current.getModelCode());
-        AiConfigJsonValidator.validate(effective, resolveProviderCode(effective));
+        validateModelConfiguration(effective);
         // 并发上限层级校验：模型上限不得超过所属供应商与全局上限
         concurrencyConfigValidator.validateModelSave(effective);
         return toAjax(modelDefinitions.save(aidAiModel, false));
@@ -306,6 +310,16 @@ public class AidAiModelController extends BaseController
      * @param model 待写入模型
      * @return 服务商编码；服务商不存在或未选择时返回 null
      */
+    private void validateModelConfiguration(AidAiModel model)
+    {
+        String providerCode = resolveProviderCode(model);
+        boolean referenceAudioDeliverable = videoProviderClients.stream().anyMatch(client ->
+                client.supportsProviderCode(providerCode)
+                        && client.supportsProtocol(model.getProtocol())
+                        && client.supportsReferenceAudioInput());
+        AiConfigJsonValidator.validate(model, providerCode, referenceAudioDeliverable);
+    }
+
     private String resolveProviderCode(AidAiModel model)
     {
         if (model == null)

@@ -26,7 +26,8 @@ public class MinimaxH3VideoReferenceStrategy extends AbstractVideoReferenceStrat
 
     @Override
     public boolean supportsProviderCode(String providerCode) {
-        return MinimaxH3Constants.PROVIDER_CODE.equalsIgnoreCase(StrUtil.trim(providerCode));
+        return MinimaxH3Constants.PROVIDER_CODE.equalsIgnoreCase(StrUtil.trim(providerCode))
+            || MinimaxH3Constants.LEGACY_PROVIDER_CODE.equalsIgnoreCase(StrUtil.trim(providerCode));
     }
 
     @Override

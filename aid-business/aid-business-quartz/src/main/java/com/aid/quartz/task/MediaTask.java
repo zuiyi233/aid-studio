@@ -44,6 +44,9 @@ public class MediaTask {
     private IMediaBillingService mediaBillingService;
 
     @Autowired
+    private com.aid.media.provider.impl.TencentMediaTemporaryCleanup tencentMediaTemporaryCleanup;
+
+    @Autowired
     private BillingFacadeService billingFacadeService;
 
     /** 防重入标记，保证上一轮跑完才能进入下一轮 */
@@ -216,6 +219,7 @@ public class MediaTask {
                 log.info("OSS 持久化补偿完成, handled={}", handled);
             }
         } finally {
+            tencentMediaTemporaryCleanup.runOnce(batchSize != null && batchSize > 0 ? batchSize : 50);
             ossCompensateRunning.set(false);
         }
     }

@@ -89,7 +89,8 @@ public class MinimaxH3CallbackServiceImpl implements MinimaxH3CallbackService {
 
     private boolean isExpectedConfig(AiModelConfigVo config) {
         return config != null
-            && MinimaxH3Constants.PROVIDER_CODE.equalsIgnoreCase(StrUtil.trim(config.getProviderCode()))
+            && (MinimaxH3Constants.PROVIDER_CODE.equalsIgnoreCase(StrUtil.trim(config.getProviderCode()))
+                || MinimaxH3Constants.LEGACY_PROVIDER_CODE.equalsIgnoreCase(StrUtil.trim(config.getProviderCode())))
             && MinimaxH3Constants.PROTOCOL_VIDEO.equalsIgnoreCase(StrUtil.trim(config.getProtocol()))
             && MinimaxH3Constants.MODEL_CODES.contains(config.getModelCode());
     }

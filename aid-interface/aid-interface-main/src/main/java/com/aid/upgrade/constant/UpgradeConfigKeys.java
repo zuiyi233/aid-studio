@@ -15,7 +15,7 @@ public final class UpgradeConfigKeys {
 
     /** 版本更新清单默认地址：配置缺失时兜底，保证开箱即用无需手工配置 */
     public static final String DEFAULT_MANIFEST_URL =
-            "https://gitee.com/gzxx-2025/aid-studio/raw/master/release/latest.json";
+            "https://cdn.aidstudio.com.cn/aid/release/latest.json";
 
     /** 使用教程默认地址：清单未下发时兜底 */
     public static final String DEFAULT_DOCS_URL =

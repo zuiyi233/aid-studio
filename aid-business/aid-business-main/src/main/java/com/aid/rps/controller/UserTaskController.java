@@ -2,6 +2,7 @@ package com.aid.rps.controller;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -49,6 +50,7 @@ import com.aid.rps.service.IAssetExtractService;
 import com.aid.rps.service.ITaskResumeService;
 import com.aid.rps.sse.AssetExtractSseManager;
 import com.aid.media.eta.MediaEtaService;
+import com.aid.media.service.TaskCompletionService;
 
 import cn.hutool.core.util.StrUtil;
 import jakarta.annotation.Resource;
@@ -95,6 +97,9 @@ public class UserTaskController extends BaseController
     @Resource
     private MediaEtaService mediaEtaService;
 
+    @Resource
+    private TaskCompletionService taskCompletionService;
+
     /**
      * 统一「继续生成（续生）」入口。
      *
@@ -137,6 +142,16 @@ public class UserTaskController extends BaseController
         Long userId = SecurityUtils.getUserId();
         try
         {
+            if ("MEDIA".equals(request.getTaskSource())) {
+                String state = taskCompletionService.cancelQueuedUserTask(request.getTaskId(), userId);
+                if ("IN_PROGRESS".equals(state)) return error("任务正在执行，暂无法取消");
+                if ("FINISHED".equals(state)) return error("任务已结束，无需取消");
+                return AjaxResult.success("ALREADY_CANCELLED".equals(state) ? "任务已取消" : "取消成功",
+                        Map.of("taskId", String.valueOf(request.getTaskId()), "status", "CANCELLED"));
+            }
+            if (request.getTaskSource() != null && !"EXTRACT".equals(request.getTaskSource())) {
+                return error("任务来源无效");
+            }
             assetExtractService.cancelTask(request.getTaskId(), userId);
             return success("操作成功");
         }
@@ -168,6 +183,38 @@ public class UserTaskController extends BaseController
         Long userId = SecurityUtils.getUserId();
         try
         {
+            if ("MEDIA".equals(request.getTaskSource())) {
+                if (request.getTaskIds().size() > 100) return error("单次最多停止100个任务");
+                List<Map<String, String>> items = new ArrayList<>();
+                int cancelled = 0, alreadyCancelled = 0, running = 0, finished = 0, rejected = 0;
+                for (Long taskId : new LinkedHashSet<>(request.getTaskIds())) {
+                    String state;
+                    try {
+                        state = taskCompletionService.cancelQueuedUserTask(taskId, userId);
+                    } catch (ServiceException invalid) {
+                        state = "REJECTED";
+                    }
+                    items.add(Map.of("taskId", String.valueOf(taskId), "status", state));
+                    switch (state) {
+                        case "CANCELLED" -> cancelled++;
+                        case "ALREADY_CANCELLED" -> alreadyCancelled++;
+                        case "IN_PROGRESS" -> running++;
+                        case "FINISHED" -> finished++;
+                        default -> rejected++;
+                    }
+                }
+                Map<String, Object> result = new LinkedHashMap<>();
+                result.put("cancelCount", cancelled);
+                result.put("alreadyCancelledCount", alreadyCancelled);
+                result.put("runningCount", running);
+                result.put("finishedCount", finished);
+                result.put("rejectedCount", rejected);
+                result.put("items", items);
+                return AjaxResult.success("已停止可取消的后续任务；已执行任务继续完成", result);
+            }
+            if (request.getTaskSource() != null && !"EXTRACT".equals(request.getTaskSource())) {
+                return error("任务来源无效");
+            }
             CancelBatchResult result = assetExtractService.cancelBatchTasks(request.getTaskIds(), userId);
             return success(result);
         }

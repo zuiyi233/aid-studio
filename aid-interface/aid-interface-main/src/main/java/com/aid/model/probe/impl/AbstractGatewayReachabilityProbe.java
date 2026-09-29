@@ -21,6 +21,9 @@ public abstract class AbstractGatewayReachabilityProbe extends AbstractReadOnlyP
             result.setDetail("未验证密钥或模型");
             return result;
         }
+        if (ProbeHttpSupport.isHttpRedirect(response)) {
+            return ProbeHttpSupport.gatewayOnlyForRedirect(response);
+        }
         return ProbeHttpSupport.unexpected(response);
     }
 }

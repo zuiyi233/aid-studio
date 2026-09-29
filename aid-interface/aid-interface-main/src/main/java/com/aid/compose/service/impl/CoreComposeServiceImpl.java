@@ -100,6 +100,7 @@ public class CoreComposeServiceImpl implements CoreComposeService {
 
     /** 当前文件存储配置，用于绑定云端输出桶并冻结存储归属。 */
     private final OssConfigManager ossConfigManager;
+    private final com.aid.common.tencent.media.TencentMediaCosConfigManager mediaCosConfigManager;
 
     /** 统一媒体生成服务：复用其并发/排队/异步提交机制提交 COMPOSE 任务 */
     private final IMediaGenerationService mediaGenerationService;
@@ -118,7 +119,7 @@ public class CoreComposeServiceImpl implements CoreComposeService {
                            IMediaGenerationService mediaGenerationService,
                            TransactionTemplate transactionTemplate) {
         this(aidMediaTaskMapper, composeUrlNormalizer, composeBillingService, mpsConfigManager,
-                null, mediaGenerationService, transactionTemplate);
+                null, null, mediaGenerationService, transactionTemplate);
     }
 
     @PostConstruct
@@ -517,10 +518,10 @@ public class CoreComposeServiceImpl implements CoreComposeService {
                 log.error("腾讯MPS访问凭证未配置");
                 throw new RuntimeException("媒体处理未配置");
             }
-            if (!"cos".equalsIgnoreCase(storage.getUploadMode())
-                    || !StrUtil.equalsIgnoreCase(media.getRegion(), storage.getCosRegion())) {
-                log.error("腾讯MPS与COS存储归属不一致, mpsRegion={}, cosRegion={}, storageMode={}",
-                        media.getRegion(), storage.getCosRegion(), storage.getUploadMode());
+            var processingCos = mediaCosConfigManager == null ? null : mediaCosConfigManager.forMps();
+            if (processingCos == null || !processingCos.configured()
+                    || !StrUtil.equalsIgnoreCase(media.getRegion(), processingCos.region())) {
+                log.error("腾讯MPS处理COS未配置或地域不匹配, mpsRegion={}", media.getRegion());
                 throw new RuntimeException("存储不匹配");
             }
             return;
@@ -908,8 +909,9 @@ public class CoreComposeServiceImpl implements CoreComposeService {
         Map<String, Object> outputStorage = new LinkedHashMap<>();
         outputStorage.put("Type", "COS");
         Map<String, Object> cos = new LinkedHashMap<>();
-        cos.put("Bucket", storage.getCosBucketName());
-        cos.put("Region", storage.getCosRegion());
+        var processingCos = mediaCosConfigManager.forMps();
+        cos.put("Bucket", processingCos.bucketName());
+        cos.put("Region", processingCos.region());
         outputStorage.put("CosOutputStorage", cos);
         request.put("OutputStorage", outputStorage);
 

@@ -206,6 +206,11 @@ export async function userTaskCancelBatch(
   )
   const data = unwrap(res)
   return {
-    cancelCount: Number(data?.cancelCount ?? 0)
+    cancelCount: Number(data?.cancelCount ?? 0),
+    alreadyCancelledCount: data?.alreadyCancelledCount,
+    runningCount: data?.runningCount,
+    finishedCount: data?.finishedCount,
+    rejectedCount: data?.rejectedCount,
+    items: data?.items
   }
 }

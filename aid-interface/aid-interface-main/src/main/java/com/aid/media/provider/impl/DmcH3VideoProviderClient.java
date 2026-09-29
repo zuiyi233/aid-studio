@@ -141,7 +141,7 @@ public class DmcH3VideoProviderClient implements VideoProviderClient {
     }
 
     /** 已发出 POST 但没有可信响应；绝不可按明确失败退款。 */
-    public static final class SubmissionOutcomeUnknownException extends RuntimeException {
-        public SubmissionOutcomeUnknownException() { super("上游提交状态待核"); }
+    public static final class SubmissionOutcomeUnknownException extends com.aid.media.provider.ProviderSubmissionOutcomeUnknownException {
+        public SubmissionOutcomeUnknownException() { super(); }
     }
 }

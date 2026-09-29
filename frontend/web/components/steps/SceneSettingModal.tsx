@@ -226,6 +226,7 @@ export function SceneSettingModal({
   useEffect(() => {
     if (!open) {
       setEditingTitleField(false)
+      setShowHistoryPanel(false)
       return
     }
     setEditingTitleField(false)
@@ -548,9 +549,12 @@ export function SceneSettingModal({
       <Drawer
         open={showHistoryPanel}
         onClose={() => setShowHistoryPanel(false)}
+        destroyOnHidden
         placement="right"
         size={400}
         rootClassName="scene-setting-history-drawer"
+        rootStyle={{ pointerEvents: 'none' }}
+        styles={{ mask: { pointerEvents: showHistoryPanel ? 'auto' : 'none' } }}
         title={
           <div className="drawer-title">
             <HistoryOutlined />

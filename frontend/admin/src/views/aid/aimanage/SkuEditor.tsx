@@ -689,6 +689,7 @@ export default function SkuEditor({
                 <Field
                   label={effectiveMeterType(sku) === 'PER_IMAGE' && sku.outputPixelsPerUnit ? '每输出像素单位原价（元/单位）'
                     : effectiveMeterType(sku) === 'PER_IMAGE' ? '每张官方原价（元/张）'
+                    : effectiveMeterType(sku) === 'PER_CREDIT' ? '每供应商积分单价（元/积分）'
                     : effectiveMeterType(sku) === 'SKU_PACKAGE' ? '整包官方原价（元/次）'
                     : '固定官方原价（元/次）'}
                   width={260}

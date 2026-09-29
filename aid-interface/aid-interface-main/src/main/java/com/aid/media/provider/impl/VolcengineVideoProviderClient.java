@@ -19,6 +19,8 @@ import com.aid.media.provider.ReferenceImageBase64Support;
 import com.aid.media.provider.ReferenceImageLimiter;
 import com.aid.media.provider.ReferencePromptSanitizer;
 import com.aid.media.provider.VideoProviderClient;
+import com.aid.media.util.ModelCapabilityResolver;
+import com.aid.media.util.ModelCapabilityValidator;
 import com.volcengine.ark.runtime.model.content.generation.CreateContentGenerationTaskRequest;
 import com.volcengine.ark.runtime.model.content.generation.CreateContentGenerationTaskResult;
 import com.volcengine.ark.runtime.model.content.generation.GetContentGenerationTaskResponse;
@@ -34,6 +36,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * 火山引擎 Seedance 视频生成，复用官方 DTO 映射并按配置的 HTTP 路径提交与查询。
@@ -56,6 +59,31 @@ public class VolcengineVideoProviderClient implements VideoProviderClient {
     private static final String SCENE_REFERENCE = "reference";
     private static final String SCENE_EDIT = "edit";
     private static final String SCENE_EXTEND = "extend";
+
+    private static final String OPTION_SERVICE_TIER = "service_tier";
+    private static final String OPTION_EXECUTION_EXPIRES_AFTER = "execution_expires_after";
+    private static final String OPTION_PRIORITY = "priority";
+    private static final String OPTION_SAFETY_IDENTIFIER = "safety_identifier";
+    private static final String OPTION_FRAMES = "frames";
+    private static final String OPTION_DRAFT = "draft";
+    private static final String OPTION_DRAFT_TASK_ID = "draft_task_id";
+    private static final String OPTION_TOOLS = "tools";
+    private static final Set<String> REQUEST_OPTION_KEYS = Set.of(
+            "lastFrameImageUrl", "endImageUrl", "end_image_url",
+            "referenceImages", "images",
+            "featureVideoUrl", "referenceVideoUrl", "baseVideoUrl", "inputVideoUrl",
+            "videoUrl", "video_url", "referenceVideos", "videos",
+            "referenceVideoDurations", "videoDurations", "inputVideoDurations",
+            "inputVideoSeconds", "referenceVideoSeconds", "videoSeconds",
+            "resolution", "size", "ratio", "aspect_ratio",
+            "generate_audio", "audio", "watermark", "seed", "camera_fixed",
+            "return_last_frame", "callback_url", "omni_reference_task_type", "output_format",
+            "generateMode", "start_end", "videoScenario", "operation",
+            OPTION_SERVICE_TIER, OPTION_EXECUTION_EXPIRES_AFTER, OPTION_PRIORITY,
+            OPTION_SAFETY_IDENTIFIER, OPTION_FRAMES, OPTION_DRAFT, OPTION_DRAFT_TASK_ID,
+            OPTION_TOOLS);
+    private static final Pattern FRACTIONAL_TIMESTAMP = Pattern.compile(
+            "(?i)(?:第\\s*)?\\d+\\.\\d+\\s*(?:s|秒)");
 
     @Override
     public String protocol() {
@@ -228,12 +256,19 @@ public class VolcengineVideoProviderClient implements VideoProviderClient {
 
     List<CreateContentGenerationTaskRequest.Content> buildContents(MediaVideoGenerateRequest request,
                                                                     AiModelConfigVo modelConfig) {
+        return buildContents(request, modelConfig, true);
+    }
+
+    private List<CreateContentGenerationTaskRequest.Content> buildContents(MediaVideoGenerateRequest request,
+                                                                            AiModelConfigVo modelConfig,
+                                                                            boolean convertImagesToBase64) {
         validateSceneMaterials(request, modelConfig);
+        validateSupportedRequestOptions(request, modelConfig);
         List<CreateContentGenerationTaskRequest.Content> contents = new ArrayList<>();
         Map<String, Object> options = request.getOptions();
         String scene = resolveScene(modelConfig);
         // Base64 传图开关：官方 image 支持 data URI（data:image/<格式>;base64,...），启用时下载转内联下发
-        boolean useBase64 = ReferenceImageBase64Support.isBase64Enabled(modelConfig);
+        boolean useBase64 = convertImagesToBase64 && ReferenceImageBase64Support.isBase64Enabled(modelConfig);
 
         if (StringUtils.isNotBlank(request.getPrompt())) {
             contents.add(CreateContentGenerationTaskRequest.Content.builder()
@@ -242,7 +277,7 @@ public class VolcengineVideoProviderClient implements VideoProviderClient {
                     .build());
         }
 
-        String lastFrameUrl = getOptionString(options, VolcengineConstants.OPTIONS_LAST_FRAME_IMAGE_URL);
+        String lastFrameUrl = getLastFrameUrl(options);
         if (SCENE_FIRST_LAST_FRAME.equals(scene)) {
             require(!hasRawReferenceVideos(options) && !hasRawReferenceImages(options)
                             && !hasRawReferenceAudios(request),
@@ -319,12 +354,13 @@ public class VolcengineVideoProviderClient implements VideoProviderClient {
                     request.getReferenceAudios(), modelConfig, "Volcengine"));
         }
 
-        applySeedancePromptContract(request, contents);
+        applySeedancePromptContract(request, contents, modelConfig);
         return contents;
     }
 
     private void applySeedancePromptContract(MediaVideoGenerateRequest request,
-                                              List<CreateContentGenerationTaskRequest.Content> contents) {
+                                              List<CreateContentGenerationTaskRequest.Content> contents,
+                                              AiModelConfigVo modelConfig) {
         int imageCount = 0;
         int videoCount = 0;
         int audioCount = 0;
@@ -338,6 +374,20 @@ public class VolcengineVideoProviderClient implements VideoProviderClient {
             }
         }
         ReferencePromptSanitizer.sanitizeInPlaceForSeedance(request, imageCount, videoCount, audioCount);
+        int maxImages = readCapabilityInt(modelConfig, "maxReferenceImages", -1);
+        int maxVideos = readCapabilityInt(modelConfig, "maxReferenceVideos", -1);
+        int maxAudios = readCapabilityInt(modelConfig, "maxReferenceAudios", -1);
+        int maxMaterials = readCapabilityInt(modelConfig, "maxReferenceMaterials", -1);
+        require(maxImages < 0 || imageCount <= maxImages, "reference image count exceeded", modelConfig);
+        require(maxVideos < 0 || videoCount <= maxVideos, "reference video count exceeded", modelConfig);
+        require(maxAudios < 0 || audioCount <= maxAudios, "reference audio count exceeded", modelConfig);
+        require(maxMaterials < 0 || imageCount + videoCount + audioCount <= maxMaterials,
+                "reference material count exceeded", modelConfig);
+        if (Boolean.TRUE.equals(readCapabilityBoolean(modelConfig,
+                "referenceAudioRequiresVisualInput"))) {
+            require(audioCount == 0 || imageCount + videoCount > 0,
+                    "reference audio requires image or video", modelConfig);
+        }
         if (!contents.isEmpty() && VolcengineConstants.CONTENT_TYPE_TEXT.equals(contents.get(0).getType())) {
             contents.set(0, CreateContentGenerationTaskRequest.Content.builder()
                     .type(VolcengineConstants.CONTENT_TYPE_TEXT)
@@ -458,17 +508,11 @@ public class VolcengineVideoProviderClient implements VideoProviderClient {
                 .content(contents)
                 .watermark(VolcengineConstants.DEFAULT_WATERMARK);
 
-        String ratio = StringUtils.defaultIfBlank(request.getAspectRatio(), modelConfig.getDefaultAspectRatio());
+        String ratio = resolveRatio(request, modelConfig);
         if (StringUtils.isNotBlank(ratio)) {
             builder.ratio(ratio);
         }
-        String resolution = getOptionString(request.getOptions(), VolcengineConstants.OPTIONS_RESOLUTION);
-        if (StringUtils.isBlank(resolution)) {
-            resolution = getOptionString(request.getOptions(), "size");
-        }
-        if (StringUtils.isBlank(resolution)) {
-            resolution = modelConfig.getDefaultSizeCode();
-        }
+        String resolution = resolveResolution(request, modelConfig);
         if (StringUtils.isNotBlank(resolution)) {
             builder.resolution(resolution.trim().toLowerCase());
         }
@@ -489,9 +533,12 @@ public class VolcengineVideoProviderClient implements VideoProviderClient {
     /** 任务落库和预冻结前的无网络完整契约校验。 */
     public static void validateFullRequest(AiModelConfigVo modelConfig, MediaVideoGenerateRequest request) {
         VolcengineVideoProviderClient validator = new VolcengineVideoProviderClient();
-        validator.validateSceneMaterials(request, modelConfig);
-        validator.validateSceneOptions(request, modelConfig);
-        validator.validateOutputFormat(request, modelConfig);
+        List<CreateContentGenerationTaskRequest.Content> contents =
+                validator.buildContents(request, modelConfig, false);
+        ModelCapabilityValidator.validatePrompt(modelConfig, request.getPrompt());
+        validator.validateTimestampInstructions(request, modelConfig);
+        validator.buildCreateRequest(validator.resolveEffectiveModel(modelConfig, request),
+                contents, request, modelConfig);
     }
 
     private void validateSceneMaterials(MediaVideoGenerateRequest request, AiModelConfigVo modelConfig) {
@@ -501,7 +548,7 @@ public class VolcengineVideoProviderClient implements VideoProviderClient {
             return;
         }
         Map<String, Object> options = request.getOptions();
-        String lastFrameUrl = getOptionString(options, VolcengineConstants.OPTIONS_LAST_FRAME_IMAGE_URL);
+        String lastFrameUrl = getLastFrameUrl(options);
         List<String> videos = collectReferenceVideos(options, modelConfig);
         List<ReferenceAudioInput> audios = ReferenceAudioLimiter.limit(
                 request.getReferenceAudios(), modelConfig, "Volcengine");
@@ -539,20 +586,12 @@ public class VolcengineVideoProviderClient implements VideoProviderClient {
     /** 2.5 场景约束必须在服务端再校验，API 直调不能绕过后台能力配置。 */
     private void validateSceneOptions(MediaVideoGenerateRequest request, AiModelConfigVo modelConfig) {
         String scene = resolveScene(modelConfig);
-        if (SCENE_LEGACY.equals(scene)) {
-            return;
-        }
-        String ratio = StringUtils.defaultIfBlank(request.getAspectRatio(), modelConfig.getDefaultAspectRatio());
+        String ratio = resolveRatio(request, modelConfig);
         Integer duration = request.getDurationSeconds() == null
                 ? modelConfig.getDefaultDurationSeconds() : request.getDurationSeconds();
-        String resolution = getOptionString(request.getOptions(), VolcengineConstants.OPTIONS_RESOLUTION);
-        if (StringUtils.isBlank(resolution)) {
-            resolution = getOptionString(request.getOptions(), "size");
-        }
-        if (StringUtils.isBlank(resolution)) {
-            resolution = modelConfig.getDefaultSizeCode();
-        }
-        require("480p".equalsIgnoreCase(resolution) || "720p".equalsIgnoreCase(resolution),
+        String resolution = resolveResolution(request, modelConfig);
+        validateCapabilityOption(modelConfig, "sizeOptions", resolution, "resolution unsupported");
+        require(isAllowedResolution(modelConfig, resolution),
                 "分辨率无效", modelConfig);
         if (SCENE_FIRST_FRAME.equals(scene) || SCENE_FIRST_LAST_FRAME.equals(scene)
                 || SCENE_EDIT.equals(scene) || SCENE_EXTEND.equals(scene)) {
@@ -566,19 +605,9 @@ public class VolcengineVideoProviderClient implements VideoProviderClient {
             require(duration != null && (duration == -1 || duration >= 4 && duration <= 30),
                     "时长范围无效", modelConfig);
         }
-    }
-
-    private void validateOutputFormat(MediaVideoGenerateRequest request, AiModelConfigVo modelConfig) {
-        if (SCENE_LEGACY.equals(resolveScene(modelConfig))) {
-            return;
-        }
-        String outputFormat = getOptionString(request.getOptions(), VolcengineConstants.JSON_OUTPUT_FORMAT);
-        if (StringUtils.isBlank(outputFormat)) {
-            outputFormat = readCapabilityString(modelConfig, "defaultOutputFormat");
-        }
-        require(StringUtils.isBlank(outputFormat) || "mp4".equalsIgnoreCase(outputFormat)
-                        || "mov".equalsIgnoreCase(outputFormat),
-                "输出格式无效", modelConfig);
+        validateCapabilityOption(modelConfig, "aspectRatioOptions", ratio, "ratio unsupported");
+        validateCapabilityOption(modelConfig, "durationOptions",
+                duration == null ? null : String.valueOf(duration), "duration unsupported");
     }
 
     private boolean isSeedance25Ratio(String ratio) {
@@ -610,33 +639,37 @@ public class VolcengineVideoProviderClient implements VideoProviderClient {
         }
 
         if (options.containsKey(VolcengineConstants.JSON_WATERMARK)) {
-            builder.watermark(Boolean.parseBoolean(String.valueOf(options.get(VolcengineConstants.JSON_WATERMARK))));
+            builder.watermark(requireBooleanOption(options, VolcengineConstants.JSON_WATERMARK, modelConfig));
         }
 
         if (options.containsKey(VolcengineConstants.OPTIONS_RETURN_LAST_FRAME)) {
-            builder.returnLastFrame(Boolean.parseBoolean(String.valueOf(options.get(VolcengineConstants.OPTIONS_RETURN_LAST_FRAME))));
+            requireCapability(modelConfig, "supportsReturnLastFrame", "return_last_frame unsupported");
+            builder.returnLastFrame(requireBooleanOption(options,
+                    VolcengineConstants.OPTIONS_RETURN_LAST_FRAME, modelConfig));
         }
 
-        if (options.get(VolcengineConstants.JSON_SEED) instanceof Number seed) {
-            builder.seed(seed.longValue());
+        if (options.containsKey(VolcengineConstants.JSON_SEED)) {
+            requireCapability(modelConfig, "supportsSeed", "seed unsupported");
+            builder.seed(requireLongOption(options, VolcengineConstants.JSON_SEED, modelConfig));
         }
 
         if (options.containsKey(VolcengineConstants.OPTIONS_CAMERA_FIXED)) {
-            builder.cameraFixed(Boolean.parseBoolean(String.valueOf(options.get(VolcengineConstants.OPTIONS_CAMERA_FIXED))));
+            requireCapability(modelConfig, "supportsCameraFixed", "camera_fixed unsupported");
+            builder.cameraFixed(requireBooleanOption(options,
+                    VolcengineConstants.OPTIONS_CAMERA_FIXED, modelConfig));
         }
 
         if (options.containsKey(VolcengineConstants.OPTIONS_CALLBACK_URL)) {
-            builder.callbackUrl(String.valueOf(options.get(VolcengineConstants.OPTIONS_CALLBACK_URL)));
+            builder.callbackUrl(requireTextOption(options,
+                    VolcengineConstants.OPTIONS_CALLBACK_URL, modelConfig));
         }
+        applyExecutionOptions(builder, options, modelConfig);
         applySeedance25SceneOptions(builder, modelConfig, options);
     }
 
     private void applySeedance25SceneOptions(CreateContentGenerationTaskRequest.Builder builder,
                                               AiModelConfigVo modelConfig, Map<String, Object> options) {
         String scene = resolveScene(modelConfig);
-        if (SCENE_LEGACY.equals(scene)) {
-            return;
-        }
         String outputFormat = getOptionString(options, VolcengineConstants.JSON_OUTPUT_FORMAT);
         if (StringUtils.isBlank(outputFormat)) {
             outputFormat = readCapabilityString(modelConfig, "defaultOutputFormat");
@@ -644,15 +677,261 @@ public class VolcengineVideoProviderClient implements VideoProviderClient {
         if (StringUtils.isNotBlank(outputFormat)) {
             String normalized = outputFormat.trim().toLowerCase();
             require("mp4".equals(normalized) || "mov".equals(normalized), "输出格式无效", modelConfig);
-            builder.outputFormat(normalized);
+            validateCapabilityOption(modelConfig, "outputFormatOptions", normalized,
+                    "output format unsupported");
+            if (!Boolean.FALSE.equals(readCapabilityBoolean(modelConfig,
+                    "supportsOutputFormatParameter"))) {
+                builder.outputFormat(normalized);
+            } else if (options != null && options.containsKey(VolcengineConstants.JSON_OUTPUT_FORMAT)) {
+                throw new ServiceException("output_format unsupported");
+            }
         }
-        if (SCENE_REFERENCE.equals(scene)) {
-            builder.omniReferenceTaskType("auto");
-        } else if (SCENE_EDIT.equals(scene)) {
-            builder.omniReferenceTaskType("edit");
-        } else if (SCENE_EXTEND.equals(scene)) {
-            builder.omniReferenceTaskType("extend");
+        String requestedTaskType = getOptionString(options,
+                VolcengineConstants.OPTIONS_OMNI_REFERENCE_TASK_TYPE);
+        String inferredTaskType = SCENE_REFERENCE.equals(scene) ? "auto"
+                : SCENE_EDIT.equals(scene) ? "edit"
+                : SCENE_EXTEND.equals(scene) ? "extend" : null;
+        String taskType = StringUtils.defaultIfBlank(requestedTaskType, inferredTaskType);
+        if (StringUtils.isNotBlank(taskType)) {
+            List<String> allowed = seedanceTaskTypeOptions(modelConfig);
+            String matched = ModelCapabilityResolver.matchOption(allowed, taskType);
+            if (matched == null) {
+                require(StringUtils.isBlank(requestedTaskType),
+                        "omni_reference_task_type unsupported", modelConfig);
+                return;
+            }
+            if (SCENE_EDIT.equals(scene)) {
+                require("edit".equalsIgnoreCase(matched), "task type conflicts with edit scene", modelConfig);
+            } else if (SCENE_EXTEND.equals(scene)) {
+                require("extend".equalsIgnoreCase(matched), "task type conflicts with extend scene", modelConfig);
+            } else if (SCENE_REFERENCE.equals(scene)) {
+                require("auto".equalsIgnoreCase(matched) || "reference".equalsIgnoreCase(matched),
+                        "task type conflicts with reference scene", modelConfig);
+            } else {
+                require(false, "omni_reference_task_type unsupported for scene", modelConfig);
+            }
+            builder.omniReferenceTaskType(matched);
         }
+    }
+
+    private void applyExecutionOptions(CreateContentGenerationTaskRequest.Builder builder,
+                                       Map<String, Object> options, AiModelConfigVo modelConfig) {
+        if (options.containsKey(OPTION_SERVICE_TIER)) {
+            String serviceTier = requireTextOption(options, OPTION_SERVICE_TIER, modelConfig).toLowerCase();
+            List<String> allowed = ModelCapabilityResolver.readOptions(
+                    ModelCapabilityResolver.parseCapability(modelConfig.getCapabilityJson()),
+                    "serviceTierOptions");
+            String matched = ModelCapabilityResolver.matchOption(allowed, serviceTier);
+            require(matched != null, "service_tier unsupported", modelConfig);
+            builder.serviceTier(matched);
+        }
+        if (options.containsKey(OPTION_EXECUTION_EXPIRES_AFTER)) {
+            long seconds = requireLongOption(options, OPTION_EXECUTION_EXPIRES_AFTER, modelConfig);
+            require(seconds > 0, "execution_expires_after must be positive", modelConfig);
+            builder.executionExpiresAfter(seconds);
+        }
+        if (options.containsKey(OPTION_PRIORITY)) {
+            requireCapability(modelConfig, "supportsPriority", "priority unsupported");
+            long priority = requireLongOption(options, OPTION_PRIORITY, modelConfig);
+            require(priority >= Integer.MIN_VALUE && priority <= Integer.MAX_VALUE,
+                    "priority invalid", modelConfig);
+            builder.priority((int) priority);
+        }
+        if (options.containsKey(OPTION_SAFETY_IDENTIFIER)) {
+            builder.safetyIdentifier(requireTextOption(options, OPTION_SAFETY_IDENTIFIER, modelConfig));
+        }
+        if (options.containsKey(OPTION_FRAMES)) {
+            requireCapability(modelConfig, "supportsFrames", "frames unsupported", true);
+            long frames = requireLongOption(options, OPTION_FRAMES, modelConfig);
+            require(frames > 0, "frames must be positive", modelConfig);
+            builder.frames(frames);
+        }
+        if (options.containsKey(OPTION_DRAFT)) {
+            requireCapability(modelConfig, "supportsDraft", "draft unsupported", true);
+            builder.draft(requireBooleanOption(options, OPTION_DRAFT, modelConfig));
+        }
+        if (options.containsKey(OPTION_DRAFT_TASK_ID)) {
+            requireCapability(modelConfig, "supportsDraftUpgrade", "draft upgrade unsupported", true);
+            require(false, "draft upgrade is not available for this Seedance model", modelConfig);
+        }
+        if (options.containsKey(OPTION_TOOLS)) {
+            requireCapability(modelConfig, "supportsWebSearch", "web_search unsupported", true);
+            builder.tools(parseTools(options.get(OPTION_TOOLS), modelConfig));
+        }
+    }
+
+    private List<CreateContentGenerationTaskRequest.ContentGenerationTool> parseTools(
+            Object raw, AiModelConfigVo modelConfig) {
+        require(raw instanceof List<?>, "tools must be an array", modelConfig);
+        List<?> values = (List<?>) raw;
+        require(!values.isEmpty(), "tools must not be empty", modelConfig);
+        List<CreateContentGenerationTaskRequest.ContentGenerationTool> tools = new ArrayList<>();
+        for (Object value : values) {
+            require(value instanceof Map<?, ?>, "tool must be an object", modelConfig);
+            Map<?, ?> item = (Map<?, ?>) value;
+            require(item.size() == 1 && item.get("type") instanceof CharSequence,
+                    "tool fields unsupported", modelConfig);
+            String type = String.valueOf(item.get("type")).trim().toLowerCase();
+            require("web_search".equals(type), "tool type unsupported", modelConfig);
+            CreateContentGenerationTaskRequest.ContentGenerationTool tool =
+                    new CreateContentGenerationTaskRequest.ContentGenerationTool();
+            tool.setType(type);
+            tools.add(tool);
+        }
+        return tools;
+    }
+
+    private void validateTimestampInstructions(MediaVideoGenerateRequest request,
+                                                AiModelConfigVo modelConfig) {
+        if (Boolean.TRUE.equals(readCapabilityBoolean(modelConfig, "timestampIntegerOnly"))
+                && StringUtils.isNotBlank(request.getPrompt())
+                && FRACTIONAL_TIMESTAMP.matcher(request.getPrompt()).find()) {
+            require(false, "timestamp instructions must use integer seconds", modelConfig);
+        }
+    }
+
+    private void validateSupportedRequestOptions(MediaVideoGenerateRequest request,
+                                                   AiModelConfigVo modelConfig) {
+        if (request == null || request.getOptions() == null) {
+            return;
+        }
+        for (String key : request.getOptions().keySet()) {
+            require(REQUEST_OPTION_KEYS.contains(key), "unsupported option: " + key, modelConfig);
+        }
+    }
+
+    private String getLastFrameUrl(Map<String, Object> options) {
+        return consistentOptionText(options, VolcengineConstants.OPTIONS_LAST_FRAME_IMAGE_URL,
+                "endImageUrl", "end_image_url");
+    }
+
+    private String resolveResolution(MediaVideoGenerateRequest request, AiModelConfigVo modelConfig) {
+        String requested = consistentOptionText(request.getOptions(),
+                VolcengineConstants.OPTIONS_RESOLUTION, "size");
+        return StringUtils.defaultIfBlank(requested, modelConfig.getDefaultSizeCode());
+    }
+
+    private String resolveRatio(MediaVideoGenerateRequest request, AiModelConfigVo modelConfig) {
+        String optionRatio = consistentOptionText(request.getOptions(), "ratio", "aspect_ratio");
+        if (StringUtils.isNotBlank(request.getAspectRatio()) && StringUtils.isNotBlank(optionRatio)
+                && !request.getAspectRatio().trim().equalsIgnoreCase(optionRatio.trim())) {
+            require(false, "conflicting ratio options", modelConfig);
+        }
+        return StringUtils.defaultIfBlank(request.getAspectRatio(),
+                StringUtils.defaultIfBlank(optionRatio, modelConfig.getDefaultAspectRatio()));
+    }
+
+    private String consistentOptionText(Map<String, Object> options, String... keys) {
+        String selected = null;
+        for (String key : keys) {
+            String candidate = getOptionString(options, key);
+            if (StringUtils.isBlank(candidate)) {
+                continue;
+            }
+            if (selected != null && !selected.trim().equalsIgnoreCase(candidate.trim())) {
+                throw new ServiceException("conflicting option aliases");
+            }
+            selected = candidate;
+        }
+        return selected;
+    }
+
+    private boolean isAllowedResolution(AiModelConfigVo modelConfig, String resolution) {
+        List<String> allowed = ModelCapabilityResolver.readOptions(
+                ModelCapabilityResolver.parseCapability(modelConfig.getCapabilityJson()), "sizeOptions");
+        if (!allowed.isEmpty()) {
+            return ModelCapabilityResolver.matchOption(allowed, resolution) != null;
+        }
+        return "480p".equalsIgnoreCase(resolution) || "720p".equalsIgnoreCase(resolution);
+    }
+
+    private List<String> seedanceTaskTypeOptions(AiModelConfigVo modelConfig) {
+        List<String> configured = ModelCapabilityResolver.readOptions(
+                ModelCapabilityResolver.parseCapability(modelConfig.getCapabilityJson()),
+                "seedanceTaskTypeOptions");
+        if (!configured.isEmpty()) {
+            return configured;
+        }
+        String upstream = modelConfig == null ? null : modelConfig.getRealModelCode();
+        if (StringUtils.isBlank(upstream) && modelConfig != null) {
+            upstream = modelConfig.getModelCode();
+        }
+        return StringUtils.containsIgnoreCase(upstream, "seedance-2-5")
+                ? List.of("auto", "edit", "extend") : Collections.emptyList();
+    }
+
+    private void validateCapabilityOption(AiModelConfigVo modelConfig, String key,
+                                          String value, String message) {
+        if (StringUtils.isBlank(value)) {
+            return;
+        }
+        List<String> allowed = ModelCapabilityResolver.readOptions(
+                ModelCapabilityResolver.parseCapability(modelConfig.getCapabilityJson()), key);
+        if (!allowed.isEmpty()) {
+            require(ModelCapabilityResolver.matchOption(allowed, value) != null, message, modelConfig);
+        }
+    }
+
+    private Boolean readCapabilityBoolean(AiModelConfigVo modelConfig, String key) {
+        if (modelConfig == null) {
+            return null;
+        }
+        com.fasterxml.jackson.databind.JsonNode capability =
+                ModelCapabilityResolver.parseCapability(modelConfig.getCapabilityJson());
+        com.fasterxml.jackson.databind.JsonNode value = capability == null ? null : capability.get(key);
+        return value != null && value.isBoolean() ? value.asBoolean() : null;
+    }
+
+    private void requireCapability(AiModelConfigVo modelConfig, String key, String message) {
+        requireCapability(modelConfig, key, message, false);
+    }
+
+    private void requireCapability(AiModelConfigVo modelConfig, String key, String message,
+                                   boolean requireExplicitSupport) {
+        Boolean supported = readCapabilityBoolean(modelConfig, key);
+        require(Boolean.TRUE.equals(supported) || supported == null && !requireExplicitSupport,
+                message, modelConfig);
+    }
+
+    private Boolean requireBooleanOption(Map<String, Object> options, String key,
+                                         AiModelConfigVo modelConfig) {
+        Object raw = options.get(key);
+        if (raw instanceof Boolean value) {
+            return value;
+        }
+        if (raw instanceof CharSequence value) {
+            String normalized = value.toString().trim();
+            require("true".equalsIgnoreCase(normalized) || "false".equalsIgnoreCase(normalized),
+                    key + " must be boolean", modelConfig);
+            return Boolean.valueOf(normalized);
+        }
+        require(false, key + " must be boolean", modelConfig);
+        return null;
+    }
+
+    private long requireLongOption(Map<String, Object> options, String key,
+                                   AiModelConfigVo modelConfig) {
+        Object raw = options.get(key);
+        if (raw instanceof Byte || raw instanceof Short || raw instanceof Integer || raw instanceof Long) {
+            return ((Number) raw).longValue();
+        }
+        if (raw instanceof CharSequence value) {
+            try {
+                return Long.parseLong(value.toString().trim());
+            } catch (NumberFormatException ignored) {
+                // Rejected below with the provider contract error.
+            }
+        }
+        require(false, key + " must be an integer", modelConfig);
+        return 0L;
+    }
+
+    private String requireTextOption(Map<String, Object> options, String key,
+                                     AiModelConfigVo modelConfig) {
+        Object raw = options.get(key);
+        require(raw instanceof CharSequence && StringUtils.isNotBlank(raw.toString()),
+                key + " must be text", modelConfig);
+        return raw.toString().trim();
     }
 
     /**
@@ -663,14 +942,24 @@ public class VolcengineVideoProviderClient implements VideoProviderClient {
         if (request == null) {
             return null;
         }
-        if (request.getAudio() != null) {
+        Map<String, Object> options = request.getOptions();
+        if (options == null || !options.containsKey(VolcengineConstants.OPTIONS_GENERATE_AUDIO)
+                && !options.containsKey("audio")) {
             return request.getAudio();
         }
-        Map<String, Object> options = request.getOptions();
-        if (options == null || !options.containsKey(VolcengineConstants.OPTIONS_GENERATE_AUDIO)) {
-            return null;
+        Boolean generateAudio = options.containsKey(VolcengineConstants.OPTIONS_GENERATE_AUDIO)
+                ? requireBooleanOption(options, VolcengineConstants.OPTIONS_GENERATE_AUDIO, null) : null;
+        Boolean audio = options.containsKey("audio")
+                ? requireBooleanOption(options, "audio", null) : null;
+        if (generateAudio != null && audio != null && !generateAudio.equals(audio)) {
+            throw new ServiceException("conflicting audio options");
         }
-        return Boolean.parseBoolean(String.valueOf(options.get(VolcengineConstants.OPTIONS_GENERATE_AUDIO)));
+        Boolean optionValue = generateAudio != null ? generateAudio : audio;
+        if (request.getAudio() != null && optionValue != null
+                && !request.getAudio().equals(optionValue)) {
+            throw new ServiceException("conflicting audio options");
+        }
+        return request.getAudio() != null ? request.getAudio() : optionValue;
     }
 
     private String normalizeStatus(String status) {
@@ -814,7 +1103,13 @@ public class VolcengineVideoProviderClient implements VideoProviderClient {
             return null;
         }
         Object value = options.get(key);
-        return value != null ? String.valueOf(value) : null;
+        if (value == null) {
+            return null;
+        }
+        if (!(value instanceof CharSequence)) {
+            throw new ServiceException(key + " must be text");
+        }
+        return value.toString();
     }
 
     private List<String> getOptionStringList(Map<String, Object> options, String key) {
@@ -825,13 +1120,16 @@ public class VolcengineVideoProviderClient implements VideoProviderClient {
         if (value instanceof List<?> list) {
             List<String> result = new ArrayList<>();
             for (Object item : list) {
-                if (item != null && StringUtils.isNotBlank(String.valueOf(item))) {
-                    result.add(String.valueOf(item));
+                if (item != null && !(item instanceof CharSequence)) {
+                    throw new ServiceException(key + " entries must be text");
+                }
+                if (item != null && StringUtils.isNotBlank(item.toString())) {
+                    result.add(item.toString().trim());
                 }
             }
             return result;
         }
-        return Collections.emptyList();
+        throw new ServiceException(key + " must be an array");
     }
 
     private record HttpResult(int statusCode, String body) {

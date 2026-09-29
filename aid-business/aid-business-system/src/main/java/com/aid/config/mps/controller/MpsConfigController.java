@@ -27,6 +27,7 @@ import com.aid.compose.config.FfmpegRuntimeValidator;
 import com.aid.compose.config.FfmpegRuntimeValidator.FontValidationException;
 import com.aid.compose.config.MpsConfigManager;
 import com.aid.compose.config.MpsProperties;
+import com.aid.common.tencent.media.TencentMediaCosConfigManager;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
@@ -62,6 +63,7 @@ public class MpsConfigController extends BaseController {
 
     /** 保存后立即刷新运行时缓存，避免新任务在短暂缓存窗口内继续读取旧处理方式。 */
     private final MpsConfigManager mpsConfigManager;
+    private final TencentMediaCosConfigManager mediaCosConfigManager;
 
     /** 自定义 FFmpeg 绝对路径能力校验。 */
     private final FfmpegRuntimeValidator ffmpegRuntimeValidator;
@@ -173,10 +175,8 @@ public class MpsConfigController extends BaseController {
         String storageMode = StrUtil.blankToDefault(storage.get("uploadMode"), "local").trim().toLowerCase();
         if ("tencent-mps".equals(mode)) {
             validatePositive(request.getTencentMaxConcurrency(), "腾讯并发");
-            if (!"cos".equals(storageMode)) {
-                log.error("腾讯MPS仅允许COS存储, storageMode={}", storageMode);
-                throw new IllegalArgumentException("存储不匹配");
-            }
+            var processingCos = mediaCosConfigManager.forMps();
+            if (!processingCos.configured()) throw new IllegalArgumentException("请先配置腾讯云媒体服务 COS");
             String region = StrUtil.blankToDefault(firstNonNull(request.getTencentRegion(), request.getRegion()), "");
             region = region.trim().toLowerCase();
             if (!region.matches("[a-z0-9-]{3,64}")) {
@@ -184,8 +184,8 @@ public class MpsConfigController extends BaseController {
                 throw new IllegalArgumentException("地域格式错误");
             }
             request.setTencentRegion(region);
-            if (!region.equalsIgnoreCase(StrUtil.blankToDefault(storage.get("cosRegion"), ""))) {
-                log.error("腾讯MPS与COS地域不一致, mpsRegion={}, cosRegion={}", region, storage.get("cosRegion"));
+            if (!region.equalsIgnoreCase(processingCos.region())) {
+                log.error("腾讯MPS与处理COS地域不一致, mpsRegion={}, cosRegion={}", region, processingCos.region());
                 throw new IllegalArgumentException("地域不一致");
             }
             validateEnabledSecrets(request.getEnabled(),

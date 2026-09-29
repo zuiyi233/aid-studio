@@ -138,7 +138,8 @@ public final class MediaTaskPayloadSanitizer {
      */
     public static String compactTerminalRequest(String mediaType, String status, String requestJson) {
         boolean terminal = Objects.equals(status, MediaTaskStatus.SUCCEEDED.name())
-            || Objects.equals(status, MediaTaskStatus.FAILED.name());
+            || Objects.equals(status, MediaTaskStatus.FAILED.name())
+            || Objects.equals(status, MediaTaskStatus.CANCELLED.name());
         if (!terminal || StrUtil.isBlank(requestJson)) {
             return requestJson;
         }

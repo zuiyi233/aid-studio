@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 import java.util.List;
+import java.math.BigDecimal;
 
 @Data
 @Builder
@@ -53,6 +54,21 @@ public class ProviderTaskResult {
     private List<String> resultUrls;
 
     /**
+     * Provider 已在返回成功终态前写入当前系统对象存储的有序结果地址。
+     * 仅用于需要“先持久化、再结算”的异步处理协议；普通生成协议保持为空。
+     */
+    @JsonIgnore
+    private List<String> persistedResultUrls;
+
+    /** 按 {@link #persistedResultUrls} 同序记录的 MIME 类型。 */
+    @JsonIgnore
+    private List<String> persistedResultMimeTypes;
+
+    /** 按 {@link #persistedResultUrls} 同序记录的文件大小（Byte）。 */
+    @JsonIgnore
+    private List<Long> persistedResultFileSizes;
+
+    /**
      * 查询成功时实际产出张数（图片计费结算依据）。
      * 为空时按 resultUrls.size() 兜底。
      */
@@ -63,6 +79,9 @@ public class ProviderTaskResult {
      * 从厂商 usage.video_duration / usage.output_video_duration 解析。
      */
     private Integer videoDurationSeconds;
+
+    /** Authoritative upstream billed credit amount when exposed by the provider. */
+    private BigDecimal providerCredits;
 
     /** 查询成功时上游计费口径中的实际输入视频秒数。 */
     private Integer inputVideoSeconds;

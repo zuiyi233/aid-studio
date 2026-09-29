@@ -127,6 +127,7 @@ public class BillingQuoteAssemblerImpl implements BillingQuoteAssembler
         if ("TOKEN".equals(meterType)) return "TOKEN";
         if ("PER_IMAGE".equals(meterType)) return "IMAGE";
         if ("PER_SECOND".equals(meterType)) return "SECOND";
+        if ("PER_CREDIT".equals(meterType)) return "PROVIDER_CREDIT";
         if ("PER_CHAR".equals(meterType)) return "CHAR";
         return "image".equalsIgnoreCase(modelType) ? "IMAGE" : "CALL";
     }
@@ -136,6 +137,7 @@ public class BillingQuoteAssemblerImpl implements BillingQuoteAssembler
         return switch (unit)
         {
             case "TOKEN" -> "Token";
+            case "PROVIDER_CREDIT" -> "供应商积分";
             case "IMAGE" -> "张";
             case "SECOND" -> "秒";
             case "CHAR" -> "字符";

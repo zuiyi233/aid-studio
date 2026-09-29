@@ -334,14 +334,29 @@ public final class BillingInputExtractor {
         if (rawDuration < 1) {
             rawDuration = 5;
         }
+        // WaveSpeed Depth Anything bills input video by rounded-up seconds with a 3-second minimum.
+        if (modelConfig != null && "wavespeed:depth-anything-video".equals(modelConfig.getProtocol())) {
+            rawDuration = Math.max(3, rawDuration);
+        }
+        if (modelConfig != null && "topaz:video-express".equals(modelConfig.getProtocol())) {
+            params.put("interpolationMode", extractFromOptions(request.getOptions(), "interpolationMode"));
+            params.put("estimatedProviderCredits", extractFromOptions(request.getOptions(), "estimatedProviderCredits"));
+        }
         // 多帧视频（Vidu multiframe 等）：durationSeconds 是"每段"时长，真实出片长度 = 段数 × 每段时长，
         // 计费必须按总时长，否则 9 段视频只按 1 段扣费
         int segments = countMultiFrameSegments(request.getOptions());
         if (segments > 1) {
             rawDuration = rawDuration * segments;
         }
-        if (rawDuration > VIDEO_DURATION_HARD_CAP_SECONDS) {
-            rawDuration = VIDEO_DURATION_HARD_CAP_SECONDS;
+        String protocol = modelConfig == null ? null : modelConfig.getProtocol();
+        // 腾讯云数据万象按已核验的素材时长计费。人声分离可处理近 45 分钟，
+        // 人像分割也不能因为生成视频的 300 秒保护值而少预冻结或少结算。
+        int durationCap = "tencent-ci-async-media".equals(protocol)
+                ? Integer.MAX_VALUE
+                : "wavespeed:depth-anything-video".equals(protocol)
+                    ? 600 : VIDEO_DURATION_HARD_CAP_SECONDS;
+        if (rawDuration > durationCap) {
+            rawDuration = durationCap;
         }
         params.put("duration", rawDuration);
         params.put("autoDuration", autoDuration);
@@ -350,6 +365,10 @@ public final class BillingInputExtractor {
         String resolution = extractFromOptions(request.getOptions(), "resolution");
         if (CharSequenceUtil.isBlank(resolution)) {
             resolution = extractFromOptions(request.getOptions(), "size");
+        }
+        if (CharSequenceUtil.isBlank(resolution) && modelConfig != null
+                && "topaz:video-express".equals(modelConfig.getProtocol())) {
+            resolution = extractFromOptions(request.getOptions(), "targetResolution");
         }
         if (CharSequenceUtil.isNotBlank(resolution)) {
             String tier = ResolutionUtil.parseTier(resolution);

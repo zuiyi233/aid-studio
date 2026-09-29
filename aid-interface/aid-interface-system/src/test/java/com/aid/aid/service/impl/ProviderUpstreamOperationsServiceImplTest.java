@@ -125,8 +125,12 @@ class ProviderUpstreamOperationsServiceImplTest {
         assertEquals("still-present", noMore.get("nextCursor"));
 
         Map<String, Object> more = ProviderUpstreamOperationsServiceImpl.parseTaskPage(
-            MAPPER.readTree("{\"result\":[],\"next_cursor\":\"\",\"has_more\":true}"));
+            MAPPER.readTree("{\"result\":[],\"next_cursor\":\"next-page\",\"has_more\":true}"));
         assertEquals(true, more.get("hasMore"));
+        assertEquals("next-page", more.get("nextCursor"));
+
+        assertThrows(ServiceException.class, () -> ProviderUpstreamOperationsServiceImpl.parseTaskPage(
+            MAPPER.readTree("{\"result\":[],\"next_cursor\":\"\",\"has_more\":true}")));
     }
 
     @Test
@@ -213,6 +217,14 @@ class ProviderUpstreamOperationsServiceImplTest {
         assertEquals(List.of("queued", "running"), state.statuses());
         assertEquals(true, path.startsWith("/proxy/minimax/v9/query/video_generation?page_num=1&page_size=20"));
         assertEquals(false, path.contains("filter.status="));
+        assertEquals(false, path.contains("filter.model="));
+        assertEquals(false, path.contains("filter.task_type="));
+
+        query.setModel("MiniMax-H3");
+        query.setTaskType("generation");
+        path = ProviderUpstreamOperationsServiceImpl.buildMinimaxListPath(
+            "/proxy/minimax/v9/query/video_generation/%s",
+            ProviderUpstreamOperationsServiceImpl.createMinimaxCursor(query));
         assertEquals(true, path.contains("filter.model=MiniMax-H3"));
         assertEquals(true, path.contains("filter.task_type=generation"));
     }

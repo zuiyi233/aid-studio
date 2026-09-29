@@ -10,7 +10,7 @@ import ModelTemplatePicker from './ModelTemplatePicker';
 import { definitionErrors, type ModelCapabilityDefinition } from './modelDefinition';
 import { mergeMaxConcurrency, parseMaxConcurrency } from './helpers';
 import type { Model, Provider } from './types';
-import { getModelBillingOverview } from './billingSummary';
+import { getModelBillingOverview, withEffectiveModelBilling } from './billingSummary';
 import { newApiManualImageDefinition, newApiManualModelCode, newApiManualTextDefinition } from './newApiManualModel';
 
 const IMAGE_PROXY_PLACEHOLDER = '{url}';
@@ -73,7 +73,7 @@ export default function ModelDialog({ open, title, provider, data, onCancel, onO
       ...(manualNewApi ? { newApiInputPrice: 1, newApiOutputPrice: 1, newApiImagePrice: 1 } : {}),
       ...data, isFree: data?.isFree === true, imageUrlProxyEnabled: data?.imageUrlProxyEnabled === true } as Model;
     setModel(next);
-    setDefinitions(data?.capabilities || []);
+    setDefinitions(withEffectiveModelBilling(next));
     form.resetFields();
     form.setFieldsValue({ ...next, maxConcurrency: parseMaxConcurrency(next.scheduleStrategyJson) });
     setTab(data?.id ? 'capabilities' : 'basic');
@@ -112,6 +112,21 @@ export default function ModelDialog({ open, title, provider, data, onCancel, onO
       }
       const capability = effectiveDefinitions.find((item) => item.enabled && item.defaultCapability)!;
       const route = capability.bindings.find((item) => item.enabled && item.defaultBinding)!;
+      let inheritedRuleJson = '';
+      try { inheritedRuleJson = JSON.stringify(JSON.parse(model.billingRuleJson || '')); }
+      catch { /* Invalid source pricing remains visible for correction. */ }
+      const savedDefinitions = effectiveDefinitions.map((definition) => ({
+        ...definition,
+        bindings: definition.bindings.map((binding) => {
+          const original = data?.capabilities?.find((item) => item.code === definition.code)
+            ?.bindings.find((item) => item.code === binding.code);
+          if (!original || (Array.isArray(original.billingRule?.skus) && original.billingRule.skus.length > 0)
+            || !inheritedRuleJson || JSON.stringify(binding.billingRule) !== inheritedRuleJson) {
+            return binding;
+          }
+          return { ...binding, billingRule: original.billingRule };
+        })
+      }));
       if (manualNewApi) {
         values.realModelCode = String(values.realModelCode).trim();
         values.modelName = values.realModelCode.slice(0, 100);
@@ -121,7 +136,7 @@ export default function ModelDialog({ open, title, provider, data, onCancel, onO
       const result: Model = {
         ...model, ...values, providerId: provider?.id,
         ...capability.presentation, ...route.presentation,
-        capabilities: effectiveDefinitions,
+        capabilities: savedDefinitions,
         generateMode: capability.generateMode,
         protocol: route.protocol, apiVersion: route.apiVersion, apiSuffix: route.apiSuffix,
         capabilityJson: JSON.stringify(route.capability || {}),

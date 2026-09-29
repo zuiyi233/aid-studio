@@ -1768,6 +1768,26 @@ public class OssTemplate
         {
             return "application/pdf";
         }
+        if (Objects.equals(ext, "mp4") || Objects.equals(ext, "m4v"))
+        {
+            return "video/mp4";
+        }
+        if (Objects.equals(ext, "mov"))
+        {
+            return "video/quicktime";
+        }
+        if (Objects.equals(ext, "webm"))
+        {
+            return "video/webm";
+        }
+        if (Objects.equals(ext, "mp3"))
+        {
+            return "audio/mpeg";
+        }
+        if (Objects.equals(ext, "wav"))
+        {
+            return "audio/wav";
+        }
         // 默认返回二进制流类型
         return "application/octet-stream";
     }

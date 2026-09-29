@@ -69,6 +69,10 @@ export function StoryboardScriptModal({
   }, [panelTitle])
 
   useEffect(() => {
+    if (!open) setShowHistoryPanel(false)
+  }, [open])
+
+  useEffect(() => {
     if (localContentRef.current !== initialContent) {
       setLocalContent(initialContent)
       if (historyStackRef.current.length === 0) {
@@ -297,9 +301,12 @@ export function StoryboardScriptModal({
       <Drawer
         open={showHistoryPanel}
         onClose={() => setShowHistoryPanel(false)}
+        destroyOnHidden
         placement="right"
         size={400}
         rootClassName="storyboard-script-history-drawer"
+        rootStyle={{ pointerEvents: 'none' }}
+        styles={{ mask: { pointerEvents: showHistoryPanel ? 'auto' : 'none' } }}
         title={
           <div className="drawer-title">
             <HistoryOutlined />
